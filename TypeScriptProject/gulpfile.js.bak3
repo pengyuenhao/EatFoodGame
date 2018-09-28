@@ -1,0 +1,37 @@
+var gulp = require('gulp');
+var plugins = require('gulp-load-plugins')();
+var imagemin = require("gulp-imagemin");
+var javascriptObfuscator = require("gulp-javascript-obfuscator");
+
+
+gulp.task("imagemin", function (cb) {
+    gulp.src(["./build/wechatgame/**/*.png"])
+        .pipe(imagemin([
+            imagemin.gifsicle({interlaced: true}),
+            imagemin.jpegtran({progressive: true}),
+            imagemin.optipng({optimizationLevel: 5})
+        ]))
+        .pipe(gulp.dest("./build/wechatgame/"))
+        .on("end", cb);
+});
+
+gulp.task("obfuscator", function (cb) {
+    gulp.src(["./build/wechatgame/cocos2d-js.js"])
+        .pipe(javascriptObfuscator({
+            compact: true,
+            domainLock: [".pengyunhao.top"],
+            mangle: true,
+            rotateStringArray: true,
+            selfDefending: false,
+            stringArray: true,
+            target: "browser-no-eval"
+        }))
+        .pipe(gulp.dest("./build/wechatgame")
+            .on("end", cb));
+});
+
+gulp.task('default',['obfuscator'], function() {
+    //plugins.javascriptObfuscator = require("javascript-obfuscator");
+    console.info("CocosProject~!");
+    // 将你的默认的任务代码放在这
+});
