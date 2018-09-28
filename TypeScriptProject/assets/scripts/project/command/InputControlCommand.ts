@@ -1,10 +1,13 @@
 import { Command } from "../../lib/framework/Command/Command";
-import { MainModel } from "../context/MainModel";
+import { MainModel } from "../Model/MainModel";
 import { inject } from "../../lib/framework/Injector/InjectDecorator";
 import Animal from "../view/Animal";
 import { __IC_Model, ModelType } from "../util/Model";
-import { __IC_Util } from "../util/MainUtil";
 import { TouchUtil, TouchDirection, TouchStatus } from "../util/TouchUtil";
+import { InputModel } from "../Model/InputModel";
+import { __IC_Util, UtilType } from "../util/Util";
+import { __IC_Manager, ManagerType } from "../util/Manager";
+import AudioManager from "../util/AudioManager";
 
 /**
  * 输入控制指令
@@ -12,37 +15,41 @@ import { TouchUtil, TouchDirection, TouchStatus } from "../util/TouchUtil";
 export class InputControlCommand extends Command{
     @inject(__IC_Model,ModelType.Main)
     mMdl : MainModel;
+    @inject(__IC_Model,ModelType.Input)
+    iMdl : InputModel;
     @inject(cc.Node,"Animals")
     animalsNode : cc.Node;
-    @inject(__IC_Util,"Touch")
+    @inject(__IC_Util,UtilType.Touch)
     tUtl : TouchUtil;
+    @inject(__IC_Manager,ManagerType.Audio)
+    aMgr : AudioManager;
 
     execute(){
         let that = this;
         //注册一个使用全局区域的上划回调
         this.tUtl.on(TouchDirection.Up,(status:TouchStatus)=>{
-            if(status.sPosX>0){
+            if(status.sPosX>=0){
                 that.areaOnMove(TouchDirection.Up);
             }else{
                 that.areaOnMove(TouchDirection.Down);
             }
         });
         this.tUtl.on(TouchDirection.Down,(status:TouchStatus)=>{
-            if(status.sPosX>0){
+            if(status.sPosX>=0){
                 that.areaOnMove(TouchDirection.Up);
             }else{
                 that.areaOnMove(TouchDirection.Down);
             }
         });
         this.tUtl.on(TouchDirection.Left,(status:TouchStatus)=>{
-            if(status.sPosY>0){
+            if(status.sPosY>=0){
                 that.areaOnMove(TouchDirection.Left);
             }else{
                 that.areaOnMove(TouchDirection.Right);
             }
         });
         this.tUtl.on(TouchDirection.Right,(status:TouchStatus)=>{
-            if(status.sPosY>0){
+            if(status.sPosY>=0){
                 that.areaOnMove(TouchDirection.Left);
             }else{
                 that.areaOnMove(TouchDirection.Right);
@@ -61,19 +68,29 @@ export class InputControlCommand extends Command{
     }
     //旋转动物
     rotateAnimals(direction) {
-        if (this.mMdl.isRotationing) return
+        //如果正处于旋转中，则将缓存下一步操作
+        if (this.mMdl.isRotationing) {
+            this.iMdl.waitingHandle = this.rotateAnimals(direction);
+            return;
+        }
+        //播放跳跃音效
+        this.aMgr.play("Jump");
         let that = this;
         this.mMdl.isRotationing = true
         const [x, y] = direction ? [1, -1] : [-1, 1]
         const rotateAction = cc.scaleBy(this.mMdl.rotateDur, x, y)
-        this.animalsNode.runAction(cc.sequence(rotateAction, cc.callFunc(() => {
+        this.iMdl.lastAction = this.animalsNode.runAction(cc.sequence(rotateAction, cc.callFunc(() => {
             that.resetAnimalsNode(direction);
             if(that.animalsNode.children&&this.animalsNode.children.length>0){
                 //遍历并旋转所有动物节点
                 that.animalsNode.children.forEach((animalNode, i) => animalNode.getComponent(Animal).rePositonAnimal(i))
             }
-            that.mMdl.isRotationing = false
-        })))
+            that.mMdl.isRotationing = false;
+            //执行之前等待中的操作
+            if(this.iMdl.waitingHandle){
+                this.iMdl.waitingHandle();
+            }
+        })));
     }
 
     resetAnimalsNode(direction) {

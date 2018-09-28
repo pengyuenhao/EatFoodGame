@@ -1,14 +1,15 @@
 import {__IC_SignalManager, ISignalManager} from "../../Lib/Framework/Signal/SignalManager"
 import { Command } from "../../lib/framework/Command/Command";
-import { MainModel } from "../context/MainModel";
+import { MainModel } from "../Model/MainModel";
 import { inject } from "../../lib/framework/Injector/InjectDecorator";
 import { MainSignalEnum } from "../signal/MainSignalEnum";
-import { MainUtil,__IC_Util } from "../util/MainUtil";
+import { MainUtil } from "../util/MainUtil";
 import PrefabPool from "../helper/PrefabPool";
 import { __IC_Model, ModelType } from "../util/Model";
 import { __IC_Manager, ManagerType } from "../util/Manager";
-import ResourceManager from "../util/ResourceManager";
+import PrefabManager from "../util/PrefabManager";
 import { __IC_InjectBinder, IInjectBinder } from "../../lib/framework/Injector/InjectBinder";
+import { __IC_Util, UtilType } from "../util/Util";
 
 //引用注入装饰器
 export class StartCommand extends Command{
@@ -16,11 +17,11 @@ export class StartCommand extends Command{
     sMgr : ISignalManager;
     @inject(__IC_Model,ModelType.Main)
     mMdl : MainModel;
-    @inject(__IC_Util,"Main")
+    @inject(__IC_Util,UtilType.Main)
     mUtil : MainUtil;
     //注入资源管理器
-    @inject(__IC_Manager,ManagerType.Resource)
-    resMgr : ResourceManager;
+    @inject(__IC_Manager,ManagerType.Prefab)
+    resMgr : PrefabManager;
     @inject(__IC_InjectBinder)
     inj: IInjectBinder;
     @inject(cc.Node,"LogicNode")
@@ -30,7 +31,7 @@ export class StartCommand extends Command{
 
     //执行
     execute(){
-        console.log("[开始指令]");
+        //console.log("[开始指令]");
 
         this.lanuch();
         this.start();

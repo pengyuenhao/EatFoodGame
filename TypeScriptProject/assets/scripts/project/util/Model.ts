@@ -13,5 +13,5 @@ export interface IModel{
  */
 export enum ModelType{
     Main = "Main",
-
+    Input = "Input",
 }

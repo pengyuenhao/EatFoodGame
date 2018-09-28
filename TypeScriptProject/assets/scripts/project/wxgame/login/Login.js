@@ -1,5 +1,5 @@
 import Common from "../../common";
-import WxApi from "../WxApi";
+import WxGameApi from "../WxGameApi";
 
 cc.Class({
     extends: cc.Component,
@@ -9,7 +9,8 @@ cc.Class({
     },
 
     onLoad(){
-        if(!WxApi.isRunInWeiXin)return;
+        if(!WxGameApi.isRunInWeiXin)return;
+        WxGameApi.playBGM("https://636f-common-510ecc-1257233686.tcb.qcloud.la/bgm.mp3?sign=13c065e7d82084906a0147ece1d1e47f&t=1538131480");
         console.info("[登入微信平台]");
         wx.login({
             success(res){
@@ -26,6 +27,7 @@ cc.Class({
             //获取最高分数据后绑定存储分数的方法
             Common.saveScoreFunc = this.saveScore;
         }
+
     },
     launchOptionsSync(){
         if(!Common.shareTickets)Common.shareTickets=[];

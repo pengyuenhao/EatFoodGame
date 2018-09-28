@@ -1,11 +1,13 @@
-import { randomCoin, randomValue, spriteRes } from '.././util'
 import { inject } from '../../lib/framework/Injector/InjectDecorator';
-import { MainModel} from '../context/MainModel';
+import { MainModel} from '../Model/MainModel';
 import Animal from './Animal';
-import { MainUtil, __IC_Util } from '../util/MainUtil';
+import { MainUtil } from '../util/MainUtil';
 import { IocView } from '../../lib/extensions/IocView';
 import { GameSignalEnum, MainSignalEnum } from '../signal/MainSignalEnum';
 import { __IC_Model, ModelType } from "../util/Model";
+import { __IC_Util, UtilType } from '../util/Util';
+import { __IC_Manager, ManagerType } from '../util/Manager';
+import AudioManager from '../util/AudioManager';
 
 const {ccclass, property} = cc._decorator
 
@@ -13,46 +15,64 @@ const {ccclass, property} = cc._decorator
 export default class Food extends IocView {
     @inject(__IC_Model,ModelType.Main)
     mMdl : MainModel;
-    @inject(__IC_Util,"Main")
+    @inject(__IC_Util,UtilType.Main)
     mUtl : MainUtil;
+    @inject(__IC_Manager,ManagerType.Audio)
+    aMgr : AudioManager;
 
     inited;
     foodData;
 
-	speed = 300
-	accel = 100
-    moveY = 0
+	public speed = 0;
+    public accel = 0;
+    
+    private moveY = 0
     type = ''
 
     onLoad() {super.onLoad();}
     start(){super.start();}
     reuse() {}
     unuse() {}
-
+    public clear(){
+        this.speed = 100;
+        this.accel = 100;
+        this.moveY = 0;
+        this.node.x = 0;
+        this.node.y = 0;
+    }
     update(dt) {
     	if (!this.inited) return
     	this.speed += this.accel * dt
     	this.moveY = this.speed * dt
-    	this.node.y -= this.moveY
+        this.node.y -= this.moveY
     }
 
     onCollisionEnter(other, self) {
-        if (!this.inited) return
-        const otherComponent = other.getComponent(Animal)
-        const selfComponent = self.getComponent(Food)
+        if (!this.inited) return;
+        let otherComponent = other.getComponent(Animal);
+        let selfComponent = self.getComponent(Food);
         if (otherComponent && selfComponent && otherComponent.type === selfComponent.type) {
             //this.mMdl.onMatch()
-            this.sMgr.get(MainSignalEnum.Match).dispatch(GameSignalEnum.onMatch);
-            this.resPoolNode(this.node)
+            this.sMgr.get(MainSignalEnum.Match).dispatch(GameSignalEnum.onMatch,this.node);
+            this.resPoolNode(this.node);
         } else {
             //this.mMdl.onNotMatch()
             this.sMgr.get(MainSignalEnum.Match).dispatch(GameSignalEnum.onNotMatch);
         }
+        this.inited = false;
+    }
+    //回收到资源池
+    resPoolNode(foodNode) {
+        let index = this.mMdl.currentFoodNodes.indexOf(foodNode)
+        if (index !== -1) {
+            this.mMdl.currentFoodNodes.splice(index, 1)
+        }
+        return this.mMdl.foodPool.res(foodNode)
     }
     //随机配置食物位置
     randomProps() {
         this.inited = false
-        let track = randomCoin()
+        let track = this.mUtl.randomCoin()
         //记录最后的食物索引
         if (this.mMdl.lastFoodIndex === -1) this.mMdl.lastFoodIndex = track
         if (this.mMdl.lastTrack === -1) this.mMdl.lastTrack = track
@@ -71,23 +91,16 @@ export default class Food extends IocView {
             if (i >= this.mMdl.foodDatas.length) i = i - this.mMdl.foodDatas.length
             return i
         })
-        let foodIndex = randomValue(...randomRange)
+        let foodIndex = this.mUtl.randomValue(...randomRange)
         this.mMdl.lastFoodIndex = foodIndex
         this.mMdl.lastTrack = track
         this.foodData = this.mMdl.foodDatas[foodIndex]
         let foodNode = this.node
         this.type = this.foodData.type
-        foodNode.setPosition((track ? 1 : -1) * this.node.width / 2, this.mUtl.getSceneSize().height/2);
-        foodNode.getComponent(cc.Sprite).spriteFrame = this.foodData.spriteFrame 
+        foodNode.getComponent(cc.Sprite).spriteFrame = this.foodData.spriteFrame ;
+        let x = (track ? 1 : -1) * (this.mMdl.animalTextureRect.width / 2);
+        foodNode.setPosition(x , this.mUtl.getSceneSize().height/2);
         this.inited = true
-    }
-    //回收到资源池
-    resPoolNode(foodNode) {
-        let index = this.mMdl.currentFoodNodes.indexOf(foodNode)
-        if (index !== -1) {
-            this.mMdl.currentFoodNodes.splice(index, 1)
-        }
-        return this.mMdl.foodPool.res(foodNode)
     }
 }
 

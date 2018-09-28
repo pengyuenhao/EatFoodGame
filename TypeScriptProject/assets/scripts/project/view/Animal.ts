@@ -1,6 +1,6 @@
 import { IocComponet } from "../../lib/extensions/IocComponet";
 import { inject } from "../../lib/framework/Injector/InjectDecorator";
-import { MainModel } from "../context/MainModel";
+import { MainModel } from "../Model/MainModel";
 import { __IC_Model, ModelType } from "../util/Model";
 
 const {ccclass,property} = cc._decorator
@@ -46,7 +46,7 @@ export default class Animal extends IocComponet {
             x: -1,
             y: -1
         })
-        this.node.setPosition(offsetRatio.x * width / 2, offsetRatio.y * height / 2)
+        this.node.setPosition(offsetRatio.x * width / 2, offsetRatio.y * height / 2);
     }
 
 }

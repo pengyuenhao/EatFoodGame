@@ -20,7 +20,7 @@ export default class MainRoot extends IocRoot implements IRoot {
 
     start () {
         if(this.context){
-            console.info(this.context.getRoot().node.name);
+            //console.info(this.context.getRoot().node.name);
         }
     }
 }

@@ -2,7 +2,7 @@ import { IocComponet } from "../../lib/extensions/IocComponet";
 import { inject } from "../../lib/framework/Injector/InjectDecorator";
 import { __IC_SignalManager, ISignalManager } from "../../lib/framework/Signal/SignalManager";
 import { MainSignalEnum } from "../signal/MainSignalEnum";
-import { MainModel } from "../context/MainModel";
+import { MainModel } from "../Model/MainModel";
 import { __IC_InjectBinder, IInjectBinder } from "../../lib/framework/Injector/InjectBinder";
 import { __IC_Model, ModelType } from "../util/Model";
 import { IocView } from "../../lib/extensions/IocView";

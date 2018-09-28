@@ -1,5 +1,5 @@
 import {__IC_SignalManager,ISignalManager} from "../../Lib/Framework/Signal/SignalManager"
-import {MainModel} from '../context/MainModel';
+import {MainModel} from '../Model/MainModel';
 import { inject } from '../../lib/framework/Injector/InjectDecorator';
 import { IocView } from '../../lib/extensions/IocView';
 import { __IC_Model, ModelType } from "../util/Model";

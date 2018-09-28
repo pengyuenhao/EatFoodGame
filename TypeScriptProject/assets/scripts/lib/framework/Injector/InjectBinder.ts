@@ -6,7 +6,7 @@ import { InjectBinding } from "./InjectBinding";
 import {DecoratorConst} from "../Decorator/DecoratorConst"
 import {IocError, IConstructorName} from "../IocConst"
 import { __IC_Model } from "../../../project/util/Model";
-import { MainModel } from "../../../project/context/MainModel";
+import { MainModel } from "../../../project/Model/MainModel";
 //全局注入数据绑定器
 const ClassBinder = DecoratorConst.DECORATOR_CLASS_BINDER;
 

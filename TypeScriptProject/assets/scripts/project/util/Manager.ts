@@ -12,6 +12,6 @@ export interface IManager{
  * 管理器类型枚举
  */
 export enum ManagerType{
-    Resource = "Resource",
-
+    Prefab = "Prefab",
+    Audio = "Audio",
 }

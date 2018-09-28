@@ -9,7 +9,7 @@ export class LookRankCommand extends Command{
     inj: IInjectBinder;
 
     execute(){
-        console.info("[查看排行榜开始]");
+        //console.info("[查看排行榜开始]");
         this.lookRank();
     }
 

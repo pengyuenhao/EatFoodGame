@@ -1,7 +1,7 @@
 import { Singleton } from "./Singleton";
 import { IManager } from "./Manager";
 
-export default class ResourceManager extends Singleton implements IManager{
+export default class PrefabManager extends Singleton implements IManager{
     public isInit = false;
     private prefabMap : Map<any,any>
 
@@ -17,4 +17,5 @@ export default class ResourceManager extends Singleton implements IManager{
     setPrefab(key,value){
         this.prefabMap.set(key,value);
     }
+
 }

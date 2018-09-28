@@ -1,7 +1,8 @@
 import {Singleton} from "./Singleton";
+import { IUtil } from "./Util";
 
 
-export class TouchUtil extends Singleton {
+export class TouchUtil extends Singleton implements IUtil{
     private areaMap;
     //全局区域状态
     private globalAreaStatus : AreaStatus;
@@ -63,6 +64,10 @@ export class TouchUtil extends Singleton {
                     if (Math.abs(mDeltaY) > 10) {
                         status.trendY += status.totalY / mDeltaY;
                     }
+                    //如果触摸的长度超过10000则判断划动超长了
+                    if((status.totalX*status.totalX+status.totalY*status.totalY)>10000){
+                        this.disposeTouchResult(areaStatus,touch);
+                    }
                 }
             });
         });
@@ -70,7 +75,9 @@ export class TouchUtil extends Singleton {
         area.on(cc.Node.EventType.TOUCH_END, (event: cc.Event.EventTouch) => {
             let touches = event.getTouches();
             touches.forEach((touch: cc.Touch) => {
-                this.disposeTouchResult(areaStatus,touch);
+                if (areaStatus.touchMap.has(touch.getID())) {
+                    this.disposeTouchResult(areaStatus,touch);
+                }
             });
         });
 
@@ -78,7 +85,9 @@ export class TouchUtil extends Singleton {
         area.on(cc.Node.EventType.TOUCH_CANCEL, (event: cc.Event.EventTouch) => {
             let touches = event.getTouches();
             touches.forEach((touch: cc.Touch) => {
-                this.disposeTouchResult(areaStatus,touch);
+                if (areaStatus.touchMap.has(touch.getID())) {
+                    this.disposeTouchResult(areaStatus,touch);
+                }
             });
         });
     }
@@ -86,7 +95,7 @@ export class TouchUtil extends Singleton {
     disposeTouchResult(areaStatus,touch){
         //判断当前触摸正处于什么状态
         let result : TouchStatus= areaStatus.touchMoveDetection(touch);
-        if(areaStatus.touchEvnet[result.direction]){
+        if(result&&areaStatus.touchEvnet[result.direction]){
             areaStatus.touchEvnet[result.direction].forEach(event => {
                 if(event && typeof event ==="function"){
                     //告知结果和触摸信息
@@ -138,7 +147,7 @@ class AreaStatus{
             //触摸的方向，按照上下左右的顺序排列
             let direction : TouchDirection= TouchDirection.No;
             //如果移动的总距离超过10
-            if (Math.abs(status.totalY) > 10 || Math.abs(status.totalX) > 10) {
+            if (Math.abs(status.totalX) > 10 || Math.abs(status.totalY) > 10) {
                 //趋势不都为0时
                 if (status.trendX != 0 || status.trendY != 0) {
                     //检查移动的趋势
@@ -151,8 +160,9 @@ class AreaStatus{
                             direction = TouchDirection.Down;
                         }
                     } else {
+                        let trend = status.totalX / status.totalY;
                         //在X轴移动趋势不为0的情况下，检查移动趋势是否达到有效判断范围内
-                        if (Math.abs(status.trendX / status.trendY) > 2) {
+                        if (Math.abs(trend) > 1) {
                             //有效的触摸轨迹
                             isMoveValid = true;
                             //X轴方向向右移动
@@ -173,7 +183,8 @@ class AreaStatus{
                                 direction = TouchDirection.Left;
                             }
                         } else {
-                            if (Math.abs(status.trendY / status.trendX) > 2) {
+                            let trend = status.totalY / status.totalX;
+                            if (Math.abs(trend) > 1) {
                                 //有效的触摸轨迹
                                 isMoveValid = true;
                                 //Y轴方向向上移动
@@ -210,6 +221,8 @@ class AreaStatus{
                 status.direction = TouchDirection.No;
                 return status;
             }
+        }else{
+            return null;
         }
     }
 }

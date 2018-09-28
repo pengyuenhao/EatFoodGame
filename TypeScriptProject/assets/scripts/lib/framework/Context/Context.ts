@@ -94,7 +94,7 @@ export class Context implements IContext {
     public restart() : IContext{
         this.addCore();
         this.start();
-        console.info("[重启Ioc容器]");
+        //console.info("[重启Ioc容器]");
         return this;
     }
     public start(): IContext {
@@ -107,7 +107,7 @@ export class Context implements IContext {
     }
     //启动容器
     public launch() {
-        console.info("Ioc容器启动");
+        //console.info("Ioc容器启动");
     }
     /**
      * 初始化核心组件

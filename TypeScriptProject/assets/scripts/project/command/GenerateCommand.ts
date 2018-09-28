@@ -1,11 +1,12 @@
 import { Command } from "../../lib/framework/Command/Command";
 import { inject } from "../../lib/framework/Injector/InjectDecorator";
-import { MainModel } from "../context/MainModel";
-import { MainUtil,__IC_Util } from "../util/MainUtil";
+import { MainModel } from "../Model/MainModel";
+import { MainUtil } from "../util/MainUtil";
 import Animal from "../view/Animal";
 import { __IC_Model, ModelType } from "../util/Model";
 import PrefabPool from "../helper/PrefabPool";
 import { TouchUtil, TouchDirection, TouchStatus } from "../util/TouchUtil";
+import { __IC_Util, UtilType } from "../util/Util";
 
 /**
  * 生成视图节点命令
@@ -14,9 +15,9 @@ import { TouchUtil, TouchDirection, TouchStatus } from "../util/TouchUtil";
 export class GenerateCommand extends Command{
     @inject(__IC_Model,ModelType.Main)
     mMdl : MainModel;
-    @inject(__IC_Util,"Main")
+    @inject(__IC_Util,UtilType.Main)
     mUtl : MainUtil;
-    @inject(__IC_Util,"Touch")
+    @inject(__IC_Util,UtilType.Touch)
     tUtl : TouchUtil;
     @inject(cc.Node,"Scene")
     sceneNode : cc.Node;
@@ -29,7 +30,7 @@ export class GenerateCommand extends Command{
 
 
     execute(){
-        console.log("[视图节点生成指令]");
+        //console.log("[视图节点生成指令]");
         this.init();
         this.generateTouchArea();
         this.generateAnimalNodes();

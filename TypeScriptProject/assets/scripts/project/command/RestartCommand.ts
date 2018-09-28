@@ -1,6 +1,6 @@
 import { Command } from "../../lib/framework/Command/Command";
 import { inject } from "../../lib/framework/Injector/InjectDecorator";
-import { MainModel } from "../context/MainModel";
+import { MainModel } from "../Model/MainModel";
 import { __IC_Model, ModelType } from "../util/Model";
 
 //引用注入装饰器
@@ -11,12 +11,13 @@ export class RestartCommand extends Command{
     mMdl : MainModel;
 
     execute(){
-        console.info("[重新开始]");
+        //console.info("[重新开始]");
 
         this.revive();
     }
 
     revive() {
+        
         this.pauseNode.active = false
         this.clearAllCurrent()
         this.mMdl.pauseFlag = false

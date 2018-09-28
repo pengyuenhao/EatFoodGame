@@ -1,13 +1,6 @@
 import { Singleton } from "./Singleton";
-import { IConstructorName } from "../../lib/framework/IocConst";
-export class __IC_Util extends IConstructorName{
-    public get constructorName(){
-        return "IUtil";
-    }
-}
-export interface IUtil{
+import { IUtil } from "./Util";
 
-}
 export class MainUtil extends Singleton implements IUtil{
     public getSceneSize(){
         return cc.winSize;

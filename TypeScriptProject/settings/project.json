@@ -13,7 +13,11 @@
   ],
   "design-resolution-height": 1920,
   "design-resolution-width": 1080,
-  "excluded-modules": [],
+  "excluded-modules": [
+    "TiledMap",
+    "DragonBones",
+    "Physics"
+  ],
   "fit-height": false,
   "fit-width": true,
   "group-list": [

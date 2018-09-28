@@ -1,13 +1,13 @@
 import { Singleton } from "../util/Singleton";
 import { IModel } from "../util/Model";
-import { Singleton } from "../util/Singleton";
+import PrefabPool from "../helper/PrefabPool";
 
 /**
  * 应该将需要生命周期较长的变量存储在数据模型里，然后在其他类中通过注入的方式获取数据模型
  */
 export class MainModel extends Singleton implements IModel{
     //食物对象池，减少创建对象的开销
-    public foodPool = null;
+    public foodPool : PrefabPool= null;
     //当前的食物节点列表
     public currentFoodNodes = [];
     //最后的食物索引
@@ -54,10 +54,11 @@ export class MainModel extends Singleton implements IModel{
     public pauseFlag = true;
     public timer = 0
     public lastTimer = 0
-    public timePeriod = 1.8
+    public timePeriod = 2.8
     public initTimePeriod = 0
     public minTimePeriod = 0.6
     public score = 0
+    public lastScore = 0;
     public maxScore = 0;
     public currentLevel = 0
     public harderRatios = (() => {

@@ -1,22 +1,27 @@
 import { Command } from "../../lib/framework/Command/Command";
 import { inject } from "../../lib/framework/Injector/InjectDecorator";
-import { MainModel } from "../context/MainModel";
+import { MainModel } from "../Model/MainModel";
 import Common from "../Common";
 import Food from "../view/Food";
 import { GameSignalEnum } from "../signal/MainSignalEnum";
 import { __IC_Model, ModelType } from "../util/Model";
+import PauseNode from "../view/PauseNode";
+import { __IC_Manager, ManagerType } from "../util/Manager";
+import AudioManager from "../util/AudioManager";
 
 //引用注入装饰器
 export class MatchCommand extends Command{
     @inject(__IC_Model,ModelType.Main)
     mMdl : MainModel;
+    @inject(__IC_Manager,ManagerType.Audio)
+    aMgr : AudioManager;
     @inject(cc.Node,"Score")
     scoreNode : cc.Node;
     @inject(cc.Node,"Pause")
     pauseNode : cc.Node;
 
     execute(match){
-        console.info("[游戏判断]");
+        //console.info("[游戏判断]");
         switch(match){
             case GameSignalEnum.onMatch:
                 this.onMatch();
@@ -28,6 +33,7 @@ export class MatchCommand extends Command{
     }
     //增加分数
     gainPoint() {
+        this.aMgr.play("Score");
         this.mMdl.score++
         this.scoreNode.getComponent(cc.Label).string = 'Score: ' + Number(this.mMdl.score)
     }
@@ -37,20 +43,24 @@ export class MatchCommand extends Command{
 
     onNotMatch() {
         this.mMdl.pauseFlag = true
-        this.stopAllCurrent()
         this.pauseNode.active = true
-        console.info("[游戏结算]"+this.mMdl.score);
+        this.pauseNode.getComponent(PauseNode).score.string = "" + Number(this.mMdl.score);
+        this.stopAllCurrent()
+        //console.info("[游戏结算]"+this.mMdl.score);
         if(Common.saveScoreFunc){
             Common.saveScoreFunc(this.mMdl.score);
         }
+        this.mMdl.lastScore = this.mMdl.score;
+        this.mMdl.score = 0;
+        this.scoreNode.getComponent(cc.Label).string = 'Score: ' + Number(this.mMdl.score)
     }
 
     stopAllCurrent() {
-        console.info("[停止当前游戏进程]");
+        //console.info("[停止当前游戏进程]");
         //let a = Common.persistRootNode;
         if(this.mMdl.currentFoodNodes&&this.mMdl.currentFoodNodes.length>0){
             this.mMdl.currentFoodNodes.forEach(foodNode => {
-            foodNode.getComponent(Food).inited = false
+                foodNode.getComponent(Food).inited = false
             })
         }
     }

@@ -16,7 +16,7 @@ cc.Class({
         //监听主域通过微信API发送到子域的消息
         wx.onMessage(data => {
             if (data && data.message) {
-                console.info("[子域收到消息]" + data.message);
+                //console.info("[子域收到消息]" + data.message);
                 that.resolveMessage(data.message);
             }
         });
@@ -40,6 +40,8 @@ cc.Class({
         let userName = node.getChildByName('userName').getComponent(cc.Label);
         let userIcon = node.getChildByName('mask').children[0].getComponent(cc.Sprite);
         let userScore = node.getChildByName('userScore').getComponent(cc.Label);
+        
+        userIcon.enabled = false;
 
         //如果名称存在则创建对应的区块，否则创建空区块
         if (nickName) {
@@ -74,11 +76,12 @@ cc.Class({
                     type: 'png'
                 }, (err, texture) => {
                     if (err) console.error(err);
+                    userIcon.enabled = true;
                     userIcon.spriteFrame = new cc.SpriteFrame(texture);
                 });
             }
             node.on(cc.Node.EventType.TOUCH_START, () => {
-                console.info("[点击区块1]" + userName.string + "[分数]" + userScore.string);
+                //console.info("[点击区块1]" + userName.string + "[分数]" + userScore.string);
             }, this);
         }else{
             userName.string = "";
@@ -94,7 +97,7 @@ cc.Class({
     },
     //分解主域传递过来的信息
     resolveMessage(message) {
-        console.info("[指令]" + message.type);
+        //console.info("[指令]" + message.type);
         switch (message.type) {
             case "command":
                 this.resolveCommand(message.function, message.arguments, message.data);
@@ -105,7 +108,7 @@ cc.Class({
     },
 
     resolveCommand(func, args, data) {
-        console.info("[指令]" + func + "[参数]" + args + "[数据]" + data);
+        //console.info("[指令]" + func + "[参数]" + args + "[数据]" + data);
         switch (func) {
             case "start":
                 new Promise((resolve) => {
@@ -115,12 +118,12 @@ cc.Class({
                         resolve(result);
                     });
                     if (data && data.width && data.height) {
-                        console.info("[修正分辨率]" + data.width + "," + data.height);
+                        //console.info("[修正分辨率]" + data.width + "," + data.height);
                         //修改分辨率
                         this.getComponent(cc.Canvas).designResolution = new cc.size(data.width, data.height);
                     }
                 }).then((result) => {
-                    console.info("[是否得到用户信息]" + result);
+                    //console.info("[是否得到用户信息]" + result);
                     //获取朋友信息
                     this.getFriendInfo(["OneEatMaxScore"]);
                     //this.resolveCommand("switch","friend","");
@@ -136,11 +139,11 @@ cc.Class({
                     case "group":
                         //如果是从群分享卡片中打开的则可以查看同玩信息
                         if (data) {
-                            console.info("[根据]" + data + "[获取群组信息]");
+                            //console.info("[根据]" + data + "[获取群组信息]");
                             //获取群信息
                             this.getGroupInfo(data, ["OneEatMaxScore"]);
                         } else {
-                            console.info("[无法获取群组信息]");
+                            //console.info("[无法获取群组信息]");
                         }
                         break;
                 }
@@ -148,20 +151,20 @@ cc.Class({
             case "save":
                 switch (args) {
                     case "gameDiamond":
-                        console.info("[存储游戏钻石]" + data);
+                        //console.info("[存储游戏钻石]" + data);
                         break;
                     case "gameCurrency":
-                        console.info("[存储游戏币]" + data);
+                        //console.info("[存储游戏币]" + data);
                         break;
                     case "score":
-                        console.info("[存储分数]" + data);
+                        //console.info("[存储分数]" + data);
                         if (data > OpenCommon.maxScore) {
-                            console.info("[新的最高分数]" + data);
+                            //console.info("[新的最高分数]" + data);
                             this.saveMaxScoreData(data);
                         }
                         break;
                     case "shareTicket":
-                        console.info("[存储群识别码]" + data);
+                        //console.info("[存储群识别码]" + data);
                         break;
                 }
                 break;
@@ -173,7 +176,7 @@ cc.Class({
     clearContext() {
         this.rank = 0;
         this.content.removeAllChildren();
-        console.info("[清理容器]");
+        //console.info("[清理容器]");
     },
     getUserInfo(result) {
         let that = this;
@@ -188,7 +191,7 @@ cc.Class({
                     let userInfo = res.data[0];
                     //保存用户信息
                     OpenCommon.userInfo = userInfo;
-                    console.info("[获取用户信息成功]" + userInfo);
+                    //console.info("[获取用户信息成功]" + userInfo);
                     //尝试获取用户托管数据
                     that.getUserMaxScoreData((score) => {
                         let nickName = userInfo.nickName;
@@ -220,7 +223,7 @@ cc.Class({
                 },
                 fail: (res) => {
                     //reject(res);
-                    console.info("[获取用户信息失败]" + res);
+                    //console.info("[获取用户信息失败]" + res);
                     result(false);
                 }
             });
@@ -241,7 +244,7 @@ cc.Class({
             for (let i = 0; i < keys.length; i++) {
                 //如果有缓存信息
                 if (dict.has(keys[i])) {
-                    console.info("[从缓存获取好友托管数据]" + keys[i]);
+                    //console.info("[从缓存获取好友托管数据]" + keys[i]);
                     let data = dict.get(keys[i]);
                     that.createInfoBlock(data, 10);
                 } else {
@@ -254,12 +257,12 @@ cc.Class({
 
         //如果有未缓存的数据则请求云端获取
         if (kList.length > 0) {
-            console.info("[开始获取好友托管数据]" + kList);
+            //console.info("[开始获取好友托管数据]" + kList);
             // https://developers.weixin.qq.com/minigame/dev/document/open-api/data/wx.getFriendCloudStorage.html
             wx.getFriendCloudStorage({
                 keyList: keys,
                 success: function (res) {
-                    console.info("[成功获取朋友信息]", res.data);
+                    //console.info("[成功获取朋友信息]", res.data);
                     //解析数据信息
                     let data = that.resolveInfo("Friend", "OneEatMaxScore", res.data);
                     that.createInfoBlock(data, 10);
@@ -281,7 +284,7 @@ cc.Class({
         } else {
             infoMap = new Map();
             OpenCommon.localStorageMap.set(type, infoMap);
-            console.info("[创建数据缓存]"+infoMap);
+            //console.info("[创建数据缓存]"+infoMap);
         }
         //缓存数据信息
         infoMap.set(key, data);
@@ -312,7 +315,7 @@ cc.Class({
             for (let i = 0; i < keys.length; i++) {
                 //如果有缓存信息
                 if (dict.has(keys[i])) {
-                    console.info("[从缓存获取群组托管数据]" + keys[i]);
+                    //console.info("[从缓存获取群组托管数据]" + keys[i]);
                     let data = dict.get(keys[i]);
                     that.createInfoBlock(data, 10);
                 } else {
@@ -325,13 +328,13 @@ cc.Class({
 
         //如果有未缓存的数据则请求云端获取
         if (kList.length > 0) {
-            console.info("[开始获取好友托管数据]" + kList);
+            //console.info("[开始获取好友托管数据]" + kList);
             // https://developers.weixin.qq.com/minigame/dev/document/open-api/data/wx.getFriendCloudStorage.html
             wx.getGroupCloudStorage({
                 shareTicket: groupShareTicket,
                 keyList: keys,
                 success: function (res) {
-                    console.info("[成功获取群组信息]", res.data);
+                    //console.info("[成功获取群组信息]", res.data);
                     //解析数据信息
                     let data = that.resolveInfo("Group", "OneEatMaxScore", res.data);
                     that.createInfoBlock(data, 10);
@@ -351,10 +354,10 @@ cc.Class({
         wx.getUserCloudStorage({
             keyList: kvDataList,
             success(res) {
-                console.info("[获取用户托管数据成功]" + res.KVDataList.length);
+                //console.info("[获取用户托管数据成功]" + res.KVDataList.length);
                 let score = that.resolveCloudStorage(res.KVDataList, "OneEatMaxScore");
                 if (score) {
-                    console.info("[获取托管最高分成功]")
+                    //console.info("[获取托管最高分成功]")
                     OpenCommon.maxScore = score;
                     result(score);
                 } else {
@@ -364,7 +367,7 @@ cc.Class({
                 OpenCommon.isGetMaxScoreSuccess = true;
             },
             fail(res) {
-                console.info("[获取托管数据失败]");
+                //console.info("[获取托管数据失败]");
                 OpenCommon.isGetMaxScoreSuccess = false;
                 result(0);
             }
@@ -378,7 +381,7 @@ cc.Class({
         for (let i = 0; i < kVDataList.length; i++) {
             if (kVDataList[i].key === Key) {
                 return kVDataList[i].value;
-                console.info("[获取托管键值]" + Key + "[数据]" + kVDataList[i].value);
+                //console.info("[获取托管键值]" + Key + "[数据]" + kVDataList[i].value);
                 break;
             }
         }
@@ -398,9 +401,9 @@ cc.Class({
             value: "" + value
         });
         this.saveCloudStorage(kvDataList, () => {
-            console.info("[存储最高分数据成功]");
+            //console.info("[存储最高分数据成功]");
         }, () => {
-            console.info("[存储最高分数据失败]");
+            //console.info("[存储最高分数据失败]");
         });
     },
     //排序(ListData：res.data;order:false降序，true升序)
