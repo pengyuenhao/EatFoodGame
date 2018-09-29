@@ -13,9 +13,9 @@ var viewportInMain = {
 
 // Touch conversion
 cc.view.convertToLocationInView = function (tx, ty, relatedPos, out) {
-    let result = out || cc.v2();
-    let x = this._devicePixelRatio * (tx - relatedPos.left);
-    let y = this._devicePixelRatio * (relatedPos.top + relatedPos.height - ty);
+    var result = out || cc.v2();
+    var x = this._devicePixelRatio * (tx - relatedPos.left);
+    var y = this._devicePixelRatio * (relatedPos.top + relatedPos.height - ty);
     // Move to real viewport area
     x = (x - viewportInMain.x) * this._viewportRect.width / viewportInMain.width;
     y = (y - viewportInMain.y) * this._viewportRect.height / viewportInMain.height;
@@ -30,9 +30,6 @@ cc.view.convertToLocationInView = function (tx, ty, relatedPos, out) {
     return result;
 };
 
-// Overwrite wx.onMessage
-let userOnMessage = null;
-
 wx.onMessage(function (data) {
     if (data.fromEngine) {
         if (data.event === 'viewport') {
@@ -42,14 +39,7 @@ wx.onMessage(function (data) {
             viewportInMain.height = data.height;
         }
     }
-    else if (userOnMessage) {
-        userOnMessage(data);
-    }
 });
-
-wx.onMessage = function (callback) {
-    userOnMessage = callback;
-}
 
 // Canvas component adaptation
 

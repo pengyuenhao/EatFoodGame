@@ -46,13 +46,17 @@ var EventTarget = function () {
   }, {
     key: "removeEventListener",
     value: function removeEventListener(type, listener) {
-      var listeners = _events.get(this)[type];
+      var events = _events.get(this);
 
-      if (listeners && listeners.length > 0) {
-        for (var i = listeners.length; i--; i > 0) {
-          if (listeners[i] === listener) {
-            listeners.splice(i, 1);
-            break;
+      if (events) {
+        var listeners = events[type];
+
+        if (listeners && listeners.length > 0) {
+          for (var i = listeners.length; i--; i > 0) {
+            if (listeners[i] === listener) {
+              listeners.splice(i, 1);
+              break;
+            }
           }
         }
       }

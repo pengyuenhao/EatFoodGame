@@ -293,7 +293,13 @@ cc.Class({
     },
     createInfoBlock(data, length) {
         let that = this;
-        for (let i = 0; i < length; i++) {
+        let len;
+        if(data.length>length){
+            len = data.length;
+        }else{
+            len = length;
+        }
+        for (let i = 0; i < len; i++) {
             let friendInfo = data[i];
             //如果朋友信息存在则创建信息否则创建空信息
             if (friendInfo) {

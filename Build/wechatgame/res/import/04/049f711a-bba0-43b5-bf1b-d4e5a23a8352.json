@@ -1,1 +1,1 @@
-{"__type__":"cc.SpriteFrame","content":{"name":"food-bird","texture":"174r3JqHdG9pqrSSbjNreD","rect":[60,80,148,134],"offset":[2,-13],"originalSize":[264,268]}}
+{"__type__":"cc.SpriteFrame","content":{"name":"food-bird","texture":"174r3JqHdG9pqrSSbjNreD","rect":[60,80,148,134],"offset":[2,-13],"originalSize":[264,268],"capInsets":[0,0,0,0]}}
