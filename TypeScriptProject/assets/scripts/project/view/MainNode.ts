@@ -5,6 +5,7 @@ import { IocView } from '../../lib/extensions/IocView';
 import { __IC_Model, ModelType } from "../util/Model";
 import { __IC_InjectBinder, IInjectBinder } from "../../lib/framework/Injector/InjectBinder";
 import { MainSignalEnum } from "../signal/MainSignalEnum";
+import Common from "../Common";
 
 const {ccclass,property} = cc._decorator
 
@@ -25,6 +26,17 @@ export default class MainNode extends IocView {
         this.inj.bind(cc.Node).toName("MainNode").toValue(this.node).unBind();
         //执行开始信号
         this.sMgr.get(MainSignalEnum.Start).dispatch();
+
+        Common.WxGameApi.onHide(()=>{
+            console.info("[隐藏状态]");
+            this.mMdl.isHide = true;
+        });
+        Common.WxGameApi.onShow(()=>{
+            console.info("[显示状态]]");
+            this.mMdl.isHide = false;
+            //继续播放被中断的视频
+            if(Common.viedoHandle)Common.viedoHandle.play();
+        });
     }
 
     update(dt) {

@@ -15,6 +15,8 @@ export class UpdateCommand extends Command{
     mMdl : MainModel;
     @inject(cc.Node,"Scene")
     sceneNode : cc.Node;
+    @inject(cc.Node,"FoodArea")
+    foodArea : cc.Node;
     @inject(__IC_Util,UtilType.Main)
     mUtl:MainUtil;
 
@@ -26,6 +28,8 @@ export class UpdateCommand extends Command{
     }
 
     update(dt){
+        //如果小游戏处于被隐藏的状态则不执行任何更新
+        if(this.mMdl.isHide)return;
         this.mMdl.timer += dt
         if (this.mMdl.timer >= this.mMdl.lastTimer + this.mMdl.timePeriod) {
             this.mMdl.lastTimer = this.mMdl.timer
@@ -36,7 +40,7 @@ export class UpdateCommand extends Command{
                 if (this.mMdl.score >= level) {
                     this.mMdl.currentLevel++
                     this.mMdl.timePeriod -= ratio
-                    //console.log(this.mMdl.timePeriod)
+                    console.log("[难度提升]"+this.mMdl.timePeriod)
                 }
             }
         }
@@ -46,7 +50,7 @@ export class UpdateCommand extends Command{
         //获取食物实例
         let food = this.getPoolNode()
         if(!food.parent){
-            this.sceneNode.addChild(food);
+            this.foodArea.addChild(food);
         }
         let foodComponent : Food = food.getComponent(Food)
         //初始化配置

@@ -1,12 +1,12 @@
-import { IocComponet } from "../../lib/extensions/IocComponet";
 import { inject } from "../../lib/framework/Injector/InjectDecorator";
 import { MainModel } from "../Model/MainModel";
 import { __IC_Model, ModelType } from "../util/Model";
+import { IocView } from "../../lib/extensions/IocView";
 
 const {ccclass,property} = cc._decorator
 
 @ccclass
-export default class Animal extends IocComponet {
+export default class Animal extends IocView {
     @inject(__IC_Model,ModelType.Main)
     mMdl : MainModel;
 

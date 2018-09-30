@@ -1,5 +1,4 @@
 import { Command } from "../../lib/framework/Command/Command";
-import Common from "../Common";
 import { inject } from "../../lib/framework/Injector/InjectDecorator";
 import { IInjectBinder, __IC_InjectBinder } from "../../lib/framework/Injector/InjectBinder";
 

@@ -19,6 +19,7 @@ import { InputModel } from "../Model/InputModel";
 import { __IC_Util, UtilType } from "../util/Util";
 import { AudioUtil } from "../util/AudioUtil";
 import AudioManager from "../util/AudioManager";
+import { BackHomeCommand } from "../command/BackHomeCommand";
 
 export class MainContext extends Context{
     constructor(root: any){
@@ -62,6 +63,9 @@ export class MainContext extends Context{
         this.commandBinder.bind(signalMgr.get(MainSignalEnum.Match)).to(MatchCommand);
 
         this.commandBinder.bind(signalMgr.get(MainSignalEnum.InputControl)).to(InputControlCommand);
+
+        this.commandBinder.bind(signalMgr.get(MainSignalEnum.BackHome)).to(BackHomeCommand);
+
     }
     start() : IContext{
         super.start();

@@ -66,6 +66,7 @@ cc.Class({
             case 0:
                 switchBar.runAction(cc.moveBy(0.125, cc.v2(-moveRange, 0)));
                 if (WxGameApi.isRunInWeiXin) {
+                    that.hideShowTipsUi();
                     //console.info("[显示好友排行]");
                     //切换到显示好友排行
                     wx.getOpenDataContext().postMessage({
@@ -134,20 +135,37 @@ cc.Class({
 
     backhome() {
         cc.director.loadScene("Begin");
+        //清理排行榜
+/*         if (WxGameApi.isRunInWeiXin) {
+            //console.info("[启动排行榜]" + this.subContextView.width + "," + this.subContextView.height);
+            wx.getOpenDataContext().postMessage({
+                message: {
+                    type: "command",
+                    function: "clear",
+                    arguments: "",
+                    data: "",
+                }
+            });
+        } */
     },
 
     shareApp() {
         if (!WxGameApi.isRunInWeiXin) return;
+        let url = "https://636f-common-510ecc-1257233686.tcb.qcloud.la/share_rabbit.png?sign=9875d25b3df98df73fbaf7ae9dcdb860&t=1538207291";
         let that = this;
         wx.shareAppMessage({
             title: "一起来玩游戏吧！",
-            imageUrl: "/resources/ui/rank/ui_rank_rabbit.png",
+            imageUrl: url,
             success(res) {
                 //console.info("[转发成功]" + res.shareTickets);
                 //没有获取到群消息
                 if (!res.shareTickets || res.shareTickets === "") {
                     //console.info("[转发到个人用户]");
+                    if(that.rankType === 1){
+                        that.showTipsUi("无法显示群排行榜", "检测到转发到个人或者无效的群");
+                    }
                 } else {
+                    that.hideShowTipsUi();
                     //console.info("[转发到微信群]" + res.shareTickets);
                     //如果存在群组信息
                     if (res.shareTickets.length > 0) {
@@ -167,6 +185,18 @@ cc.Class({
                             }
                         }
                     }
+                    //保持在群组页面时
+                    if(that.rankType === 1){
+                        //立刻刷新页面
+                        wx.getOpenDataContext().postMessage({
+                            message: {
+                                type: "command",
+                                function: "switch",
+                                arguments: "group",
+                                data: res.shareTickets,
+                            }
+                        });
+                    }
                 }
             },
             fail(res) {
@@ -177,14 +207,21 @@ cc.Class({
     },
     //显示提示框
     showTipsUi(title, content) {
+        if(!this.tipsUiNode)return;
+        let tipsUiView = this.tipsUiNode.getComponent("TipsUiView");
         if (!this.tipsUiNode.active) {
             this.tipsUiNode.active = true;
-            let tipsUiView = this.tipsUiNode.getComponent("TipsUiView");
-            if (tipsUiView) {
-                tipsUiView.display(title, content);
-            } else {
-                //console.info("[提示UI不存在]");
-            }
+        }
+        if (tipsUiView) {
+            tipsUiView.display(title, content);
+        } else {
+            //console.info("[提示UI不存在]");
         }
     },
+    hideShowTipsUi(){
+        if(!this.tipsUiNode)return;
+        if (this.tipsUiNode.active) {
+            this.tipsUiNode.active = false;
+        }
+    }
 });

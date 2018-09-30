@@ -24,7 +24,7 @@ export default class PersistRoot extends cc.Component implements IRoot {
         //防止重复执行初始化
         if(Common.isInit)return;
         Common.isInit = true;
-        //console.info("[初始化常驻节点]");
+        console.info("[当前版本]"+Common.version);
         //配置为常驻节点
         if(!Common.persistRootNode){
             cc.game.addPersistRootNode(this.node);
@@ -49,7 +49,7 @@ export default class PersistRoot extends cc.Component implements IRoot {
 
     }
     start () {
-        
+
     }
     // update (dt) {}
 }

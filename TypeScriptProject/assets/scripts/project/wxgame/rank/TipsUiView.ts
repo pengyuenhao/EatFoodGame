@@ -19,6 +19,7 @@ export default class TipsUiView extends cc.Component {
     display(title,content){
         this.label.string = title;
         this.text.string = content;
+
     }
     onClicked(){
         this.node.active = false;

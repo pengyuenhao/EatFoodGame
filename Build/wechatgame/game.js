@@ -6,7 +6,7 @@ require('src/settings');
 var settings = window._CCSettings;
 require('main');
 require(settings.debug ? 'cocos2d-js.js' : 'cocos2d-js-min.js');
-require('./libs/engine/index.js');
+require('./libs/weapp-adapter/engine/index.js');
 
 wxDownloader.REMOTE_SERVER_ROOT = "www.pengyunhao.top";
 wxDownloader.SUBCONTEXT_ROOT = "";

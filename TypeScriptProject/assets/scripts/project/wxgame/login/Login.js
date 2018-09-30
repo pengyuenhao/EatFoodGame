@@ -8,57 +8,90 @@ cc.Class({
 
     },
 
-    onLoad(){
-        if(!WxGameApi.isRunInWeiXin)return;
-        WxGameApi.playBGM("https://636f-common-510ecc-1257233686.tcb.qcloud.la/bgm.mp3?sign=13c065e7d82084906a0147ece1d1e47f&t=1538131480");
+    onLoad() {
+        //引入JS文件到TS环境
+        Common.WxGameApi = WxGameApi;
+        if (!WxGameApi.isRunInWeiXin) return;
+        let videoName = "video.mp4";
+        let bgmName = "bgm.mp3";
+        let videoUrl = "https://636f-common-510ecc-1257233686.tcb.qcloud.la/default_video.mp4";
+        let bgmUrl = "https://636f-common-510ecc-1257233686.tcb.qcloud.la/bgm.mp3";
+        let getCachePromise = (url,name,complete) => {
+            return new Promise((resolve, reject) => {
+                WxGameApi.getOrCacheResFile(url, name, (resPath) => {
+                    complete(resPath);
+                    //传递结果给下一个异步过程
+                    resolve();
+                });
+            })
+        }
+        //缓存BGM
+        let p1 = getCachePromise(bgmUrl,bgmName,(resPath)=>{
+            WxGameApi.playBGM(resPath);
+        });
+        //缓存视频
+        let p2 = getCachePromise(videoUrl,videoName,(resPath)=>{
+            Common.viedo = resPath;
+        });
+        //启动异步的下载过程
+        let time = new Date().getSeconds();
+        let results = Promise.all([p1,p2]);
+        //获取结果
+        results.then(()=>{
+            let diff = new Date().getSeconds() - time;
+            console.info("[缓存完成]" + diff + "[秒]");
+        });
+
         console.info("[登入微信平台]");
         wx.login({
-            success(res){
+            success(res) {
                 console.info("[登录成功]" + res);
             },
-            fail(res){
+            fail(res) {
                 console.info("[登录失败]" + res);
             }
         });
         //同步启动选项
         this.launchOptionsSync();
-        //设置存储分数的方法并获取最高分
-        if(!Common.saveScoreFunc){
-            //获取最高分数据后绑定存储分数的方法
-            Common.saveScoreFunc = this.saveScore;
-        }
-
+        this.preloadFriendInfo();
+        this.preloadGroupInfo();
     },
-    launchOptionsSync(){
-        if(!Common.shareTickets)Common.shareTickets=[];
+    preloadFriendInfo() {
+        if (WxGameApi.isRunInWeiXin) {
+            //console.info("[启动排行榜]" + this.subContextView.width + "," + this.subContextView.height);
+            wx.getOpenDataContext().postMessage({
+                message: {
+                    type: "command",
+                    function: "preload",
+                    arguments: "friend",
+                    data: "",
+                }
+            });
+        }
+    },
+    preloadGroupInfo() {
+        if (!Common.shareTickets || Common.shareTickets.length === 0) return;
+        wx.getOpenDataContext().postMessage({
+            message: {
+                type: "command",
+                function: "preload",
+                arguments: "group",
+                data: Common.shareTickets[0],
+            }
+        });
+    },
+    launchOptionsSync() {
+        if (!Common.shareTickets) Common.shareTickets = [];
         let info = wx.getLaunchOptionsSync();
-        console.info("[同步启动选项]"+info);
-        switch(info.scene){
+        console.info("[同步启动选项]" + info);
+        switch (info.scene) {
             case 1044:
-                if(info.shareTicket){
+                if (info.shareTicket) {
                     Common.shareTickets.push(info.shareTicket);
                 }
                 break;
             default:
                 break;
         }
-    },
-    //存储游戏分数
-    saveScore(value){
-        let score =  Number(value);
-        //检查是否为最高分
-        if(score&&score>Common.maxScore){
-            Common.maxScore = score;
-        }
-        console.info("[通知开发数据容器存储分数]"+score);
-        //发送存储分数消息告知开放数据容器
-        wx.getOpenDataContext().postMessage({
-            message:{
-                type: "command",
-                function: "save",
-                arguments : "score",
-                data: Common.maxScore,
-            }
-        });
     }
 });

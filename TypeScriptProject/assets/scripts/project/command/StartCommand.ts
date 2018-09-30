@@ -10,6 +10,7 @@ import { __IC_Manager, ManagerType } from "../util/Manager";
 import PrefabManager from "../util/PrefabManager";
 import { __IC_InjectBinder, IInjectBinder } from "../../lib/framework/Injector/InjectBinder";
 import { __IC_Util, UtilType } from "../util/Util";
+import CountDownView from "../view/CountDownView";
 
 //引用注入装饰器
 export class StartCommand extends Command{
@@ -37,7 +38,6 @@ export class StartCommand extends Command{
         this.start();
     }
     start(){
-        this.sMgr.get(MainSignalEnum.InputControl).dispatch();
     }
     //启动配置
     lanuch(){
@@ -45,8 +45,23 @@ export class StartCommand extends Command{
         manager.enabled = true
 
         this.loadRes();
+        //载入并生成环境
+        this.sMgr.get(MainSignalEnum.Generate).dispatch(()=>{
+            //注册输入控制方法
+            this.sMgr.get(MainSignalEnum.InputControl).dispatch();
+            if(this.resMgr.hasPrefab("CountDown")){
+                let countDown : cc.Node = cc.instantiate(this.resMgr.getPrefab("CountDown"));
+                this.mainNode.addChild(countDown);
+                countDown.getComponent(CountDownView).config(3,3).onComplete(()=>{
+                    //初始化并启动游戏
+                    this.sMgr.get(MainSignalEnum.Restart).dispatch(false);
+                }).play();
+            }else{
+                //初始化并启动游戏
+                this.sMgr.get(MainSignalEnum.Restart).dispatch(false);
+            }
 
-        this.sMgr.get(MainSignalEnum.Generate).dispatch();
+        });
     }
 
 
@@ -69,11 +84,14 @@ export class StartCommand extends Command{
             let avatar = scene.getChildByName("Avatar");
             let animals = avatar.getChildByName("Animals");
             let score = scene.getChildByName("Score");
+            let foodArea = scene.getChildByName("FoodArea");
 
             this.inj.bind(cc.Node).toName("Scene").toValue(scene).unBind();
             this.inj.bind(cc.Node).toName("Avatar").toValue(avatar).unBind();
             this.inj.bind(cc.Node).toName("Animals").toValue(animals).unBind();
             this.inj.bind(cc.Node).toName("Score").toValue(score).unBind();
+            this.inj.bind(cc.Node).toName("FoodArea").toValue(foodArea).unBind();
+
         }else{
             throw new Error("Scene prefab is not found");
         }

@@ -34,13 +34,15 @@ export default class Food extends IocView {
     reuse() {}
     unuse() {}
     public clear(){
-        this.speed = 100;
-        this.accel = 100;
+        this.speed = 175;
+        this.accel = 125;
         this.moveY = 0;
         this.node.x = 0;
         this.node.y = 0;
     }
     update(dt) {
+        //如果小游戏处于被隐藏的状态则不执行任何更新
+        if(this.mMdl.isHide)return;
     	if (!this.inited) return
     	this.speed += this.accel * dt
     	this.moveY = this.speed * dt
@@ -50,6 +52,11 @@ export default class Food extends IocView {
     onCollisionEnter(other, self) {
         if (!this.inited) return;
         let otherComponent = other.getComponent(Animal);
+        if(!otherComponent){
+            otherComponent = other.getComponent(Food);
+            //食物节点之间不进行碰撞检查
+            if(otherComponent) return;
+        }
         let selfComponent = self.getComponent(Food);
         if (otherComponent && selfComponent && otherComponent.type === selfComponent.type) {
             //this.mMdl.onMatch()

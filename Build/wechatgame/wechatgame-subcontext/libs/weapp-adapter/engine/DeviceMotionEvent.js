@@ -1,9 +1,13 @@
+'use strict';
 
-function DeviceMotionEvent() {
-    this.type = 'devicemotion';
-    this.accelerationIncludingGravity = null;
-}
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var DeviceMotionEvent = function DeviceMotionEvent() {
+  _classCallCheck(this, DeviceMotionEvent);
+
+  this.type = 'devicemotion';
+  this.accelerationIncludingGravity = null;
+};
 
 var registerFunc = _cc.inputManager._registerAccelerometerEvent.bind(_cc.inputManager);
 _cc.inputManager._registerAccelerometerEvent = function () {
@@ -26,19 +30,18 @@ _cc.inputManager._registerAccelerometerEvent = function () {
       var tmp = resCpy.x;
       resCpy.x = resCpy.y;
       resCpy.y = tmp;
-      
+
       resCpy.x *= gravityFactor;
       resCpy.y *= -gravityFactor;
-  
+
       // TODO adjust x y axis when the view flips upside down
-    }
-    else {
+    } else {
       // portrait view
       resCpy.x *= -gravityFactor;
       resCpy.y *= -gravityFactor;
     }
     deviceMotionEvent.accelerationIncludingGravity = resCpy;
-  
+
     document.dispatchEvent(deviceMotionEvent);
   });
 };
@@ -49,10 +52,10 @@ _cc.inputManager._unregisterAccelerometerEvent = function () {
   unregisterFunc();
 
   wx.stopAccelerometer && wx.stopAccelerometer({
-    fail: function () {
+    fail: function fail() {
       cc.error('unregister AccelerometerEvent failed !');
     },
-    success: function () {},
-    complete: function () {},
+    success: function success() {},
+    complete: function complete() {}
   });
 };

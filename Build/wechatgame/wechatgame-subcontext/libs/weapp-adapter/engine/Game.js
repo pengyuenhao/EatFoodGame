@@ -1,3 +1,5 @@
+"use strict";
+
 var _frameRate = 60;
 cc.game.setFrameRate = function (frameRate) {
     _frameRate = frameRate;
@@ -9,19 +11,22 @@ cc.game.getFrameRate = function () {
 };
 
 cc.game._runMainLoop = function () {
-    var self = this, callback, config = self.config,
+    var self = this,
+        _callback,
+        config = self.config,
         director = cc.director,
-        skip = true, frameRate = config.frameRate;
+        skip = true,
+        frameRate = config.frameRate;
 
     cc.debug.setDisplayStats(config.showFPS);
 
-    callback = function () {
+    _callback = function callback() {
         if (!self._paused) {
-            self._intervalId = window.requestAnimFrame(callback);
+            self._intervalId = window.requestAnimFrame(_callback);
             director.mainLoop();
         }
     };
 
-    self._intervalId = window.requestAnimFrame(callback);
+    self._intervalId = window.requestAnimFrame(_callback);
     self._paused = false;
 };

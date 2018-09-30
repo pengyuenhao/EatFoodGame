@@ -44,15 +44,9 @@ export class MatchCommand extends Command{
     onNotMatch() {
         this.mMdl.pauseFlag = true
         this.pauseNode.active = true
-        this.pauseNode.getComponent(PauseNode).score.string = "" + Number(this.mMdl.score);
-        this.stopAllCurrent()
-        //console.info("[游戏结算]"+this.mMdl.score);
-        if(Common.saveScoreFunc){
-            Common.saveScoreFunc(this.mMdl.score);
-        }
-        this.mMdl.lastScore = this.mMdl.score;
-        this.mMdl.score = 0;
-        this.scoreNode.getComponent(cc.Label).string = 'Score: ' + Number(this.mMdl.score)
+        this.pauseNode.getComponent(PauseNode).show();
+        this.pauseNode.getComponent(PauseNode).updateScore(this.mMdl.score);
+        this.stopAllCurrent();
     }
 
     stopAllCurrent() {

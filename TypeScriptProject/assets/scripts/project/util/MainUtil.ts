@@ -5,11 +5,15 @@ export class MainUtil extends Singleton implements IUtil{
     public getSceneSize(){
         return cc.winSize;
     }
+    /**
+     * 异步转换资源文件为可渲染文件的对象
+     * @param resourceUrl 资源文件的地址
+     */
     public spriteRes(resourceUrl) {
-        return new Promise((resolve, reject) => {
-            cc.loader.loadRes(resourceUrl, cc.SpriteFrame, (err, spriteFrame) => {
+        return new Promise<cc.SpriteFrame>((resolve, reject) => {
+            cc.loader.loadRes(resourceUrl, cc.SpriteFrame, (err, spriteFrame : cc.SpriteFrame) => {
                 if (err) throw err
-                resolve(spriteFrame)
+                resolve(spriteFrame);
             })
         })
     }

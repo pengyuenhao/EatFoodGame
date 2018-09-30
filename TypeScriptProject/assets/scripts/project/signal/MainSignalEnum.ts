@@ -14,6 +14,8 @@ export enum MainSignalEnum{
     Match = "Match",
     //输入控制
     InputControl = "InputControl",
+    //返回主菜单
+    BackHome = "BackHome",
 }
 
 export enum GameSignalEnum{

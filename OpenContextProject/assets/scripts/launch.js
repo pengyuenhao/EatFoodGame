@@ -9,7 +9,17 @@ cc.Class({
         content: cc.Node,
         prefab: cc.Prefab
     },
-
+    onLoad(){
+        //获取用户信息
+        this.getUserInfo((result) => {
+            console.info("[获取用户信息]"+result);
+        });
+        //获取使用者信息
+        this.getUserMaxScoreData((result)=>{
+            OpenCommon.maxScore = result;
+            console.info("[获取用户最高分]"+result);
+        })
+    },
     start() {
         let that = this;
         this.rank = 0;
@@ -29,11 +39,13 @@ cc.Class({
         let nickName;
         let avatarUrl;
         let score;
+        let openid;
         //如果存在信息
         if(user){
             nickName = user.nickName ? user.nickName : user.nickname;
             avatarUrl = user.avatarUrl;
             score = this.resolveCloudStorage(user.KVDataList, "OneEatMaxScore");
+            openid = user.openid;
         }
         //尝试解析数据
         let userRank = node.getChildByName('rank').getComponent(cc.Label);
@@ -49,6 +61,7 @@ cc.Class({
                 score = "null";
                 userRank.string = "null";
             }else{
+
                 that.rank += 1;
                 userRank.string = that.rank;
                 switch(that.rank){
@@ -110,6 +123,19 @@ cc.Class({
     resolveCommand(func, args, data) {
         //console.info("[指令]" + func + "[参数]" + args + "[数据]" + data);
         switch (func) {
+            case "clear":
+                this.clearContext();
+                break;
+            case "preload":
+                switch (args) {
+                    case "friend": 
+                        this.updateFriendInfo(["OneEatMaxScore"]);
+                        break;
+                    case "group":
+                        this.updateGroupInfo(data,["OneEatMaxScore"]);
+                        break;
+                }
+                break;
             case "start":
                 new Promise((resolve) => {
                     this.clearContext();
@@ -140,6 +166,7 @@ cc.Class({
                         //如果是从群分享卡片中打开的则可以查看同玩信息
                         if (data) {
                             //console.info("[根据]" + data + "[获取群组信息]");
+                            OpenCommon.lastTicket = data;
                             //获取群信息
                             this.getGroupInfo(data, ["OneEatMaxScore"]);
                         } else {
@@ -158,10 +185,7 @@ cc.Class({
                         break;
                     case "score":
                         //console.info("[存储分数]" + data);
-                        if (data > OpenCommon.maxScore) {
-                            //console.info("[新的最高分数]" + data);
-                            this.saveMaxScoreData(data);
-                        }
+                        this.saveMaxScoreData(data);
                         break;
                     case "shareTicket":
                         //console.info("[存储群识别码]" + data);
@@ -220,6 +244,10 @@ cc.Class({
                         }
                         result(true);
                     });
+/*                     if(userInfo.nickName === "彭云浩"){
+                        console.info("[修改指定最高分]");
+                        that.saveMaxScoreData(-9999);
+                    } */
                 },
                 fail: (res) => {
                     //reject(res);
@@ -232,7 +260,21 @@ cc.Class({
         }
 
     },
-
+    //更新朋友信息
+    updateFriendInfo(keys){
+        let that = this;
+        wx.getFriendCloudStorage({
+            keyList: keys,
+            success: function (res) {
+                console.info("[成功更新朋友信息]", res.data);
+                //解析数据信息
+                that.resolveInfo("Friend", "OneEatMaxScore", res.data);
+            },
+            fail: function (res) {
+                console.error(res);
+            }
+        });
+    },
     getFriendInfo(keys) {
         let that = this;
         let kList;
@@ -262,7 +304,7 @@ cc.Class({
             wx.getFriendCloudStorage({
                 keyList: keys,
                 success: function (res) {
-                    //console.info("[成功获取朋友信息]", res.data);
+                    console.info("[成功获取朋友信息]", res.data);
                     //解析数据信息
                     let data = that.resolveInfo("Friend", "OneEatMaxScore", res.data);
                     that.createInfoBlock(data, 10);
@@ -309,7 +351,21 @@ cc.Class({
             }
         }
     },
-
+    updateGroupInfo(groupShareTicket, keys){
+        let that = this;
+        wx.getGroupCloudStorage({
+            shareTicket: groupShareTicket,
+            keyList: keys,
+            success: function (res) {
+                console.info("[成功更新群组信息]", res.data);
+                //解析数据信息
+                that.resolveInfo("Group", "OneEatMaxScore", res.data);
+            },
+            fail: function (res) {
+                console.error(res);
+            }
+        });
+    },
     getGroupInfo(groupShareTicket, keys) {
         let that = this;
         let kList;
@@ -363,8 +419,8 @@ cc.Class({
                 //console.info("[获取用户托管数据成功]" + res.KVDataList.length);
                 let score = that.resolveCloudStorage(res.KVDataList, "OneEatMaxScore");
                 if (score) {
-                    //console.info("[获取托管最高分成功]")
-                    OpenCommon.maxScore = score;
+                    console.info("[获取托管最高分成功]" + score)
+                    //OpenCommon.maxScore = score;
                     result(score);
                 } else {
                     that.saveMaxScoreData(0);
@@ -383,12 +439,12 @@ cc.Class({
     resolveCloudStorage(kVDataList, Key) {
         //数据无效则直接返回
         if (!kVDataList) return null;
-        console.log("[托管数据数量]" + kVDataList.length);
+        //console.log("[托管数据数量]" + kVDataList.length);
         for (let i = 0; i < kVDataList.length; i++) {
             if (kVDataList[i].key === Key) {
                 return kVDataList[i].value;
                 //console.info("[获取托管键值]" + Key + "[数据]" + kVDataList[i].value);
-                break;
+                //break;
             }
         }
     },
@@ -401,15 +457,27 @@ cc.Class({
         });
     },
     saveMaxScoreData(value) {
+        if(!OpenCommon.maxScore||value<=OpenCommon.maxScore){
+            console.info("[最高分]"+OpenCommon.maxScore +"[但存储值]"+value +"[过低]");
+            return;
+        }
+        let keys = ["OneEatMaxScore"];
         let kvDataList = new Array();
         kvDataList.push({
-            key: "OneEatMaxScore",
+            key: keys[0],
             value: "" + value
         });
+        //上报分数后立刻更新排行榜分数
+        if(OpenCommon.lastTicket){
+            //如果存在信息则进行更新
+            this.updateGroupInfo(OpenCommon.lastTicket,keys);
+        }
+        //存储分数数据
         this.saveCloudStorage(kvDataList, () => {
-            //console.info("[存储最高分数据成功]");
+            console.info("[存储最高分数据成功]");
+            this.updateFriendInfo(keys);
         }, () => {
-            //console.info("[存储最高分数据失败]");
+            console.info("[存储最高分数据失败]");
         });
     },
     //排序(ListData：res.data;order:false降序，true升序)
