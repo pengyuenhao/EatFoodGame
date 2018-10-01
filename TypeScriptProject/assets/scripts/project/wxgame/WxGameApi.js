@@ -63,6 +63,19 @@ export default class WxGameApi {
             onComplete();
             video.destroy();
         });
+        //播放一秒后检查播放状态
+        setTimeout(()=>{
+            if(!video)return;
+            //根据对象搜索算法找到的微信视频接口状态函数
+            
+            let status = video.emitter.event + "";
+            if(status === "onVideoPause"){
+                console.info("[播放提前结束]" + video.emitter.event);
+                isPlayFinish = true;
+                onComplete();
+                video.destroy();
+            }
+        },1000);
         //检查超时
         setTimeout(()=>{
             //如果播放超时则强制结束播放

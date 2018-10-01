@@ -55,8 +55,10 @@ export class MainModel extends Singleton implements IModel {
         width: 264,
         height: 268
     }
-
+    //暂停标记
     public pauseFlag = true;
+    //准备状态标记
+    public readyFlag = false;
     //游戏被隐藏
     public isHide = false;
     //是否已经观看过广告

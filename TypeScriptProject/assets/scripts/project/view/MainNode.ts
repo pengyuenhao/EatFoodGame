@@ -6,6 +6,7 @@ import { __IC_Model, ModelType } from "../util/Model";
 import { __IC_InjectBinder, IInjectBinder } from "../../lib/framework/Injector/InjectBinder";
 import { MainSignalEnum } from "../signal/MainSignalEnum";
 import Common from "../Common";
+import { Helper } from "../helper/Helper";
 
 const {ccclass,property} = cc._decorator
 
@@ -32,10 +33,17 @@ export default class MainNode extends IocView {
             this.mMdl.isHide = true;
         });
         Common.WxGameApi.onShow(()=>{
-            console.info("[显示状态]]");
+            console.info("[显示状态]" + Common.viedoHandle);
             this.mMdl.isHide = false;
             //继续播放被中断的视频
-            if(Common.viedoHandle)Common.viedoHandle.play();
+            if(Common.viedoHandle){
+                //Helper.getAllInfo(Common.viedoHandle);
+                let status = Common.viedoHandle.emitter.event + "";
+                if(status === "onVideoPause"){
+                    console.info("[继续播放]" + Common.viedoHandle.emitter.event);
+                    Common.viedoHandle.play();
+                }
+            }
         });
     }
 

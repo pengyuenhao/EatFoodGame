@@ -108,15 +108,18 @@ export class RestartCommand extends Command{
             waitStartTime = 1;
             waitDurTime = 0.75;
         }
-
+        //处于准备开始的状态
+        this.mMdl.readyFlag = true;
         if(this.preMgr.hasPrefab("CountDown")){
             let countDown : cc.Node = cc.instantiate(this.preMgr.getPrefab("CountDown"));
             this.mainNode.addChild(countDown);
             countDown.getComponent(CountDownView).config(waitStartTime,waitDurTime).onComplete(()=>{
                 this.mMdl.pauseFlag = false;
+                this.mMdl.readyFlag = false;
             }).play();
         }else{
             this.mMdl.pauseFlag = false;
+            this.mMdl.readyFlag = false;
         }
     }
 

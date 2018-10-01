@@ -58,8 +58,8 @@ export class InputControlCommand extends Command{
     }
 
     areaOnMove(direction : TouchDirection) {
-        //如果暂停标志位为真则直接返回
-        if (this.mMdl.pauseFlag) return
+        //如果暂停标志位为真并且不在准备状态则直接返回
+        if (this.mMdl.pauseFlag&&!this.mMdl.readyFlag) return;
         if (direction === TouchDirection.Left || direction === TouchDirection.Right) {
             this.rotateAnimals(0)
         } else if (direction === TouchDirection.Up || direction === TouchDirection.Down) {
