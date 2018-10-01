@@ -22,7 +22,7 @@ export class StartCommand extends Command{
     mUtil : MainUtil;
     //注入资源管理器
     @inject(__IC_Manager,ManagerType.Prefab)
-    resMgr : PrefabManager;
+    preMgr : PrefabManager;
     @inject(__IC_InjectBinder)
     inj: IInjectBinder;
     @inject(cc.Node,"LogicNode")
@@ -49,37 +49,27 @@ export class StartCommand extends Command{
         this.sMgr.get(MainSignalEnum.Generate).dispatch(()=>{
             //注册输入控制方法
             this.sMgr.get(MainSignalEnum.InputControl).dispatch();
-            if(this.resMgr.hasPrefab("CountDown")){
-                let countDown : cc.Node = cc.instantiate(this.resMgr.getPrefab("CountDown"));
-                this.mainNode.addChild(countDown);
-                countDown.getComponent(CountDownView).config(3,3).onComplete(()=>{
-                    //初始化并启动游戏
-                    this.sMgr.get(MainSignalEnum.Restart).dispatch(false);
-                }).play();
-            }else{
-                //初始化并启动游戏
-                this.sMgr.get(MainSignalEnum.Restart).dispatch(false);
-            }
-
+            //初始化并启动游戏
+            this.sMgr.get(MainSignalEnum.Restart).dispatch(false);
         });
     }
 
 
     loadRes(){
-        if(!this.resMgr.isInit){
+        if(!this.preMgr.isInit){
             //绑定预制件
-            if(this.resMgr.hasPrefab("Animal")){
-                this.inj.bind(cc.Prefab).toName("Animal").toValue(this.resMgr.getPrefab("Animal"));
+            if(this.preMgr.hasPrefab("Animal")){
+                this.inj.bind(cc.Prefab).toName("Animal").toValue(this.preMgr.getPrefab("Animal"));
             }
-            if(this.resMgr.hasPrefab("Food")){
-                this.inj.bind(cc.Prefab).toName("Food").toValue(this.resMgr.getPrefab("Food"));
+            if(this.preMgr.hasPrefab("Food")){
+                this.inj.bind(cc.Prefab).toName("Food").toValue(this.preMgr.getPrefab("Food"));
             }
-            this.resMgr.isInit = true;
+            this.preMgr.isInit = true;
         }
         
         //检查是否存在对应的资源
-        if(this.resMgr.hasPrefab("Scene")){
-            let scene : cc.Node = cc.instantiate(this.resMgr.getPrefab("Scene"));
+        if(this.preMgr.hasPrefab("Scene")){
+            let scene : cc.Node = cc.instantiate(this.preMgr.getPrefab("Scene"));
             this.mainNode.addChild(scene);
             let avatar = scene.getChildByName("Avatar");
             let animals = avatar.getChildByName("Animals");
@@ -95,8 +85,8 @@ export class StartCommand extends Command{
         }else{
             throw new Error("Scene prefab is not found");
         }
-        if(this.resMgr.hasPrefab("PauseLayer")){
-            let pause : cc.Node = cc.instantiate(this.resMgr.getPrefab("PauseLayer"));
+        if(this.preMgr.hasPrefab("PauseLayer")){
+            let pause : cc.Node = cc.instantiate(this.preMgr.getPrefab("PauseLayer"));
             this.mainNode.addChild(pause);
             pause.active = false;
 

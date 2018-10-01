@@ -1,30 +1,36 @@
-import { inject } from "../../lib/framework/Injector/InjectDecorator";
-import { MainModel } from "../Model/MainModel";
 import { __IC_Model, ModelType } from "../util/Model";
-import { IocView } from "../../lib/extensions/IocView";
+import { Shake } from "../../lib/extensions/ActionExtension";
 
 const {ccclass,property} = cc._decorator
 
 @ccclass
-export default class CountDownView extends IocView {
-    private value;
-    private time;
-    private step;
+export default class CountDownView extends cc.Component {
+    @property(Number)
+    private value : number = 3;
+    @property(Number)
+    private time: number = 3;
+    @property(Boolean)
+    private isAutoPlay : boolean = false;
+
+    //单步运行的比率
+    private step : number;
+    //单步的持续时间
+    private stepDur : number;
     private completeList;
     private isPlay;
     private alpha;
     private isIn;
+    private label;
 
-    private lastLabel;
     onLoad() {
-        super.onLoad();
+        //super.onLoad();
+        this.label = this.node.getComponent(cc.Label);
         this.isPlay = false;
-        this.alpha = 0;
-        this.isIn = true;
         this.completeList = [];
     }
     start(){
-        super.start();
+        //super.start();
+        if(this.isAutoPlay)this.play();
     }
     /**
      * 配置
@@ -34,13 +40,21 @@ export default class CountDownView extends IocView {
     config(start,duration){
         this.time = duration;
         this.value = start;
-        if(this.value ===0)this.step = 0;
-        else this.step = this.value / this.time;
+
         return this;
     }
     //播放
     play(){
         this.isPlay = true;
+        //如果持续时间或者开始时间为0
+        if(this.value ===0||this.time===0){
+            this.step = 0;
+        }
+        else{
+            this.step = this.value / this.time;
+            this.stepDur = this.time/this.value;
+        } 
+
         return this;
     }
     onComplete(complete){
@@ -49,43 +63,30 @@ export default class CountDownView extends IocView {
     }
     update(dt){
         if(!this.isPlay)return;
-        if(this.value>=0){
-            let before = this.value;
+
+        if(this.value>=0&&this.step>0){
+            let before = Math.floor(this.value);
             this.value -= dt * this.step;
+            this.time -= dt;
             let after = Math.floor(this.value);
             //如果整数部分发生变化
             if(before !== after){
-                let label;
-                if(!this.lastLabel){
-                    label = new cc.Node().addComponent(cc.Label);
-                    this.node.addChild(label.node);
-                    this.lastLabel = label;
-                }else{
-                    label = this.lastLabel;
-                }
-                label.node.color = cc.color(255,255,255,0);
-                this.isIn = true;
+                this.node.stopAllActions();
+                this.node.scale = 0.5;
+                this.node.opacity = 0;
+
+                let scaleActions = [cc.scaleBy(0.35*this.stepDur,5),cc.scaleBy(1*this.stepDur,0.125)];
+                let fadeActions = [cc.fadeIn(0.35*this.stepDur),cc.fadeOut(1*this.stepDur)];
+
                 //执行动画效果
-                if(after>=0){
-                    label.string = ""+after;
+                if(after>=1){
+                    this.label.string = ""+after;
                 }else{
-                    //spawnActions.push(cc.sequence([cc.scaleBy(0.25*this.step,1.25),cc.scaleBy(0.25*this.step,0.75)]));
-                    label.string = "Go~!";
+                    this.node.runAction(Shake.create(1*this.stepDur,20,20));
+                    this.label.string = "Go~!";
                 }
-            }else{
-                //动态效果
-                if(this.lastLabel){
-                    if(this.isIn){
-                        if(this.alpha>=255){
-                            this.isIn = false;
-                        }else{
-                            this.alpha += dt * this.step * 0.25 * 255;
-                        }
-                    }else{
-                        this.alpha -= dt * this.step * 0.75 * 255;
-                    }
-                    this.lastLabel.node.color = cc.color(255,255,255,this.alpha);
-                }
+                this.node.runAction(cc.sequence(scaleActions));
+                this.node.runAction(cc.sequence(fadeActions));
             }
         }else{
             this.isPlay = false;
@@ -93,7 +94,7 @@ export default class CountDownView extends IocView {
             this.completeList.forEach(complete => {
                 complete();
             });
-            this.destroy();
+            this.node.destroy();
         }
     }
 }

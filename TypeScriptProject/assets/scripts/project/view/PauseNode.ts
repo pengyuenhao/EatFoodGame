@@ -13,15 +13,15 @@ export default class PauseNode extends IocView {
     @property(cc.Label)
     score:cc.Label = null;
     @property(cc.Sprite)
-    mainButton:cc.Sprite;
+    mainButton:cc.Sprite = null;
     @property(cc.Label)
     mainTop:cc.Label = null;
     @property(cc.Label)
     mainBotton:cc.Label = null;
     @property(cc.SpriteFrame)
-    playVideo : cc.SpriteFrame;
+    playVideo : cc.SpriteFrame = null;
     @property(cc.SpriteFrame)
-    replayFrame : cc.SpriteFrame;
+    replayFrame : cc.SpriteFrame = null;
 
     onLoad () {
         super.onLoad();

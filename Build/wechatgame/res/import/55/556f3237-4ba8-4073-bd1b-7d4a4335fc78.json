@@ -1,1 +1,1 @@
-{"__type__":"cc.SpriteFrame","content":{"name":"food-dog","texture":"35a+uoW1RE153bEMHm1Mus","rect":[27,60,211,156],"offset":[0.5,-4],"originalSize":[264,268]}}
+{"__type__":"cc.SpriteFrame","content":{"name":"food-dog","texture":"35a+uoW1RE153bEMHm1Mus","rect":[27,60,211,156],"offset":[0.5,-4],"originalSize":[264,268],"capInsets":[0,0,0,0]}}

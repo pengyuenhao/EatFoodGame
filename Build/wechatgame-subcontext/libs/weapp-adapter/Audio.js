@@ -7,6 +7,8 @@ exports.default = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 var _HTMLAudioElement2 = require('./HTMLAudioElement');
 
 var _HTMLAudioElement3 = _interopRequireDefault(_HTMLAudioElement2);
@@ -25,10 +27,9 @@ var HAVE_CURRENT_DATA = 2;
 var HAVE_FUTURE_DATA = 3;
 var HAVE_ENOUGH_DATA = 4;
 
-var _innerAudioContext = new WeakMap();
-var _src = new WeakMap();
-var _loop = new WeakMap();
-var _autoplay = new WeakMap();
+var SN_SEED = 1;
+
+var _innerAudioContextMap = {};
 
 var Audio = function (_HTMLAudioElement) {
   _inherits(Audio, _HTMLAudioElement);
@@ -38,51 +39,57 @@ var Audio = function (_HTMLAudioElement) {
 
     var _this = _possibleConstructorReturn(this, (Audio.__proto__ || Object.getPrototypeOf(Audio)).call(this));
 
+    _this._$sn = SN_SEED++;
+
     _this.HAVE_NOTHING = HAVE_NOTHING;
     _this.HAVE_METADATA = HAVE_METADATA;
     _this.HAVE_CURRENT_DATA = HAVE_CURRENT_DATA;
     _this.HAVE_FUTURE_DATA = HAVE_FUTURE_DATA;
     _this.HAVE_ENOUGH_DATA = HAVE_ENOUGH_DATA;
+
     _this.readyState = HAVE_NOTHING;
-
-
-    _src.set(_this, '');
 
     var innerAudioContext = wx.createInnerAudioContext();
 
-    _innerAudioContext.set(_this, innerAudioContext);
+    _innerAudioContextMap[_this._$sn] = innerAudioContext;
+
+    _this._canplayEvents = ['load', 'loadend', 'canplay', 'canplaythrough', 'loadedmetadata'];
 
     innerAudioContext.onCanplay(function () {
-      _this.dispatchEvent({ type: 'load' });
-      _this.dispatchEvent({ type: 'loadend' });
-      _this.dispatchEvent({ type: 'canplay' });
-      _this.dispatchEvent({ type: 'canplaythrough' });
-      _this.dispatchEvent({ type: 'loadedmetadata' });
-      _this.readyState = HAVE_CURRENT_DATA;
+      _this._loaded = true;
+      _this.readyState = _this.HAVE_CURRENT_DATA;
+      _this._canplayEvents.forEach(function (type) {
+        _this.dispatchEvent({ type: type });
+      });
     });
     innerAudioContext.onPlay(function () {
-      _this._paused = _innerAudioContext.get(_this).paused;
+      _this._paused = _innerAudioContextMap[_this._$sn].paused;
       _this.dispatchEvent({ type: 'play' });
     });
     innerAudioContext.onPause(function () {
-      _this._paused = _innerAudioContext.get(_this).paused;
+      _this._paused = _innerAudioContextMap[_this._$sn].paused;
       _this.dispatchEvent({ type: 'pause' });
     });
     innerAudioContext.onEnded(function () {
-      _this._paused = _innerAudioContext.get(_this).paused;
-      if (_innerAudioContext.get(_this).loop === false) {
+      _this._paused = _innerAudioContextMap[_this._$sn].paused;
+      if (_innerAudioContextMap[_this._$sn].loop === false) {
         _this.dispatchEvent({ type: 'ended' });
       }
       _this.readyState = HAVE_ENOUGH_DATA;
     });
     innerAudioContext.onError(function () {
-      _this._paused = _innerAudioContext.get(_this).paused;
+      _this._paused = _innerAudioContextMap[_this._$sn].paused;
       _this.dispatchEvent({ type: 'error' });
     });
 
     if (url) {
-      _innerAudioContext.get(_this).src = url;
+      _this.src = url;
+    } else {
+      _this._src = '';
     }
+
+    _this._loop = innerAudioContext.loop;
+    _this._autoplay = innerAudioContext.autoplay;
     _this._paused = innerAudioContext.paused;
     _this._volume = innerAudioContext.volume;
     _this._muted = false;
@@ -90,29 +97,43 @@ var Audio = function (_HTMLAudioElement) {
   }
 
   _createClass(Audio, [{
+    key: 'addEventListener',
+    value: function addEventListener(type, listener) {
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+      _get(Audio.prototype.__proto__ || Object.getPrototypeOf(Audio.prototype), 'addEventListener', this).call(this, type, listener, options);
+
+      type = String(type).toLowerCase();
+
+      if (this._loaded && this._canplayEvents.indexOf(type) !== -1) {
+        this.dispatchEvent({ type: type });
+      }
+    }
+  }, {
     key: 'load',
     value: function load() {
-      console.warn('HTMLAudioElement.load() is not implemented.');
+      // console.warn('HTMLAudioElement.load() is not implemented.')
+      // weixin doesn't need call load() manually
     }
   }, {
     key: 'play',
     value: function play() {
-      _innerAudioContext.get(this).play();
+      _innerAudioContextMap[this._$sn].play();
     }
   }, {
     key: 'resume',
     value: function resume() {
-      _innerAudioContext.get(this).resume();
+      _innerAudioContextMap[this._$sn].resume();
     }
   }, {
     key: 'pause',
     value: function pause() {
-      _innerAudioContext.get(this).pause();
+      _innerAudioContextMap[this._$sn].pause();
     }
   }, {
     key: 'destroy',
     value: function destroy() {
-      _innerAudioContext.get(this).destroy();
+      _innerAudioContextMap[this._$sn].destroy();
     }
   }, {
     key: 'canPlayType',
@@ -132,48 +153,55 @@ var Audio = function (_HTMLAudioElement) {
     key: 'cloneNode',
     value: function cloneNode() {
       var newAudio = new Audio();
-      newAudio.loop = _innerAudioContext.get(this).loop;
-      newAudio.autoplay = _innerAudioContext.get(this).autoplay;
+      newAudio.loop = this.loop;
+      newAudio.autoplay = this.autoplay;
       newAudio.src = this.src;
       return newAudio;
     }
   }, {
     key: 'currentTime',
     get: function get() {
-      return _innerAudioContext.get(this).currentTime;
+      return _innerAudioContextMap[this._$sn].currentTime;
     },
     set: function set(value) {
-      _innerAudioContext.get(this).seek(value);
+      _innerAudioContextMap[this._$sn].seek(value);
     }
   }, {
     key: 'duration',
     get: function get() {
-      return _innerAudioContext.get(this).duration;
+      return _innerAudioContextMap[this._$sn].duration;
     }
   }, {
     key: 'src',
     get: function get() {
-      return _src.get(this);
+      return this._src;
     },
     set: function set(value) {
-      _src.set(this, value);
-      _innerAudioContext.get(this).src = value;
+      this._src = value;
+      this._loaded = false;
+      this.readyState = this.HAVE_NOTHING;
+
+      var innerAudioContext = _innerAudioContextMap[this._$sn];
+
+      innerAudioContext.src = value;
     }
   }, {
     key: 'loop',
     get: function get() {
-      return _innerAudioContext.get(this).loop;
+      return this._loop;
     },
     set: function set(value) {
-      _innerAudioContext.get(this).loop = value;
+      this._loop = value;
+      _innerAudioContextMap[this._$sn].loop = value;
     }
   }, {
     key: 'autoplay',
     get: function get() {
-      return _innerAudioContext.get(this).autoplay;
+      return this.autoplay;
     },
     set: function set(value) {
-      _innerAudioContext.get(this).autoplay = value;
+      this._autoplay = value;
+      _innerAudioContextMap[this._$sn].autoplay = value;
     }
   }, {
     key: 'paused',
@@ -188,7 +216,7 @@ var Audio = function (_HTMLAudioElement) {
     set: function set(value) {
       this._volume = value;
       if (!this._muted) {
-        _innerAudioContext.get(this).volume = value;
+        _innerAudioContextMap[this._$sn].volume = value;
       }
     }
   }, {
@@ -199,9 +227,9 @@ var Audio = function (_HTMLAudioElement) {
     set: function set(value) {
       this._muted = value;
       if (value) {
-        _innerAudioContext.get(this).volume = 0;
+        _innerAudioContextMap[this._$sn].volume = 0;
       } else {
-        _innerAudioContext.get(this).volume = this._volume;
+        _innerAudioContextMap[this._$sn].volume = this._volume;
       }
     }
   }]);

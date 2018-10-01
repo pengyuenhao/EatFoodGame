@@ -5,6 +5,9 @@ import { __IC_Model, ModelType } from "../util/Model";
 import Common from "../Common";
 import { __IC_Util, UtilType } from "../util/Util";
 import { MainUtil } from "../util/MainUtil";
+import { __IC_Manager, ManagerType } from "../util/Manager";
+import PrefabManager from "../util/PrefabManager";
+import CountDownView from "../view/CountDownView";
 
 //引用注入装饰器
 export class RestartCommand extends Command{
@@ -16,6 +19,10 @@ export class RestartCommand extends Command{
     mUtl : MainUtil;
     @inject(cc.Node,"Score")
     scoreNode : cc.Node;
+    @inject(__IC_Manager,ManagerType.Prefab)
+    preMgr : PrefabManager;
+    @inject(cc.Node,"MainNode")
+    mainNode : cc.Node;
 
     execute(isPlayVideo){
         //console.info("[重新开始]");
@@ -83,15 +90,34 @@ export class RestartCommand extends Command{
      * @param isResult 是否进行结算
      */
     restart(isResult:boolean){
-        //是否结算分数
-        if(isResult)this.result();
-        this.mMdl.pauseFlag = false;
         this.mMdl.lastFoodIndex = -1
         this.mMdl.lastTrack = -1
-        this.mMdl.timer = 0
         this.mMdl.lastTimer = 0
         this.mMdl.timePeriod = 2.5
-        this.mMdl.currentLevel = 0;
+        this.mMdl.currentLevel = 0;                    
+        this.mMdl.timer = this.mMdl.timePeriod;
+        
+        let waitStartTime;
+        let waitDurTime;
+        //是否结算分数
+        if(isResult){
+            this.result();
+            waitStartTime = 4;
+            waitDurTime = 1.5;
+        }else{
+            waitStartTime = 1;
+            waitDurTime = 0.75;
+        }
+
+        if(this.preMgr.hasPrefab("CountDown")){
+            let countDown : cc.Node = cc.instantiate(this.preMgr.getPrefab("CountDown"));
+            this.mainNode.addChild(countDown);
+            countDown.getComponent(CountDownView).config(waitStartTime,waitDurTime).onComplete(()=>{
+                this.mMdl.pauseFlag = false;
+            }).play();
+        }else{
+            this.mMdl.pauseFlag = false;
+        }
     }
 
     clearAllCurrent() {
