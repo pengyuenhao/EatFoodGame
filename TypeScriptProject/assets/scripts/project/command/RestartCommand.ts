@@ -80,8 +80,6 @@ export class RestartCommand extends Command{
     //结算分数
     result(){
         this.mMdl.isLookVideo = false;
-        this.mMdl.lastScore = this.mMdl.score;
-        Common.WxGameApi.saveScore(this.mMdl.lastScore);
         this.mMdl.score = 0;
         this.scoreNode.getComponent(cc.Label).string = 'Score: ' + Number(this.mMdl.score)
     }

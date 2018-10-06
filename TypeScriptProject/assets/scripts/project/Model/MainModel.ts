@@ -73,7 +73,7 @@ export class MainModel extends Singleton implements IModel {
 
     public initTimePeriod = 0;
 
-    public minTimePeriod = 0.5;
+    public minTimePeriod = 0.6;
 
     public lastScore = 0;
     public maxScore = 0;
@@ -81,7 +81,7 @@ export class MainModel extends Singleton implements IModel {
     public harderRatios = (() => {
         const list = []
         for (let i = 0; i <= 20; i++) {
-            list[i] = [i * 2, 0.1]
+            list[i] = [i * 200, 0.1]
         }
         return list
     })();

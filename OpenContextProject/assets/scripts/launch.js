@@ -17,7 +17,16 @@ cc.Class({
         //获取使用者信息
         this.getUserMaxScoreData((result)=>{
             OpenCommon.maxScore = result;
-            console.info("[获取用户最高分]"+result);
+            //如果获取到的数据为0值则直接保存一次数据
+            if(result===0){
+                this.saveMaxScoreData(0);
+            }
+            //获取用户分数数据失败时
+            if(result===null||result===undefined){
+                console.error("[获取用户最高分失败]"+result);
+            }else{
+                console.info("[获取用户最高分]"+result);
+            }
         })
     },
     start() {
@@ -30,6 +39,19 @@ cc.Class({
                 that.resolveMessage(data.message);
             }
         });
+        //等待直到大部分预载工作完成
+        setTimeout(()=>{
+            /**测试专用 */
+            if(false&&OpenCommon.userInfo.nickName === "彭云浩"){
+                wx.removeUserCloudStorage({
+                    keyList : ["OneEatMaxScore"],
+                    success(){
+                        console.info("[移除测试人员分数]");
+                    }
+                });
+            }
+        },1000);
+
     },
     //创建使用者区块
     createUserBlock(user) {
@@ -81,7 +103,7 @@ cc.Class({
             }
             userName.string = nickName;
             userScore.string = score;
-            console.log("[获取好友信息]" + nickName);
+            //console.log("[获取好友信息]" + nickName);
             //如果头像存在
             if (avatarUrl) {
                 cc.loader.load({
@@ -266,7 +288,7 @@ cc.Class({
         wx.getFriendCloudStorage({
             keyList: keys,
             success: function (res) {
-                console.info("[成功更新朋友信息]", res.data);
+                //console.info("[成功更新朋友信息]", res.data);
                 //解析数据信息
                 that.resolveInfo("Friend", "OneEatMaxScore", res.data);
             },
@@ -304,7 +326,7 @@ cc.Class({
             wx.getFriendCloudStorage({
                 keyList: keys,
                 success: function (res) {
-                    console.info("[成功获取朋友信息]", res.data);
+                    //console.info("[成功获取朋友信息]", res.data);
                     //解析数据信息
                     let data = that.resolveInfo("Friend", "OneEatMaxScore", res.data);
                     that.createInfoBlock(data, 10);
@@ -357,7 +379,7 @@ cc.Class({
             shareTicket: groupShareTicket,
             keyList: keys,
             success: function (res) {
-                console.info("[成功更新群组信息]", res.data);
+                //console.info("[成功更新群组信息]", res.data);
                 //解析数据信息
                 that.resolveInfo("Group", "OneEatMaxScore", res.data);
             },
@@ -420,10 +442,10 @@ cc.Class({
                 let score = that.resolveCloudStorage(res.KVDataList, "OneEatMaxScore");
                 if (score) {
                     console.info("[获取托管最高分成功]" + score)
-                    //OpenCommon.maxScore = score;
+                    //如果请求成功并且有数据
                     result(score);
                 } else {
-                    that.saveMaxScoreData(0);
+                    console.info("[获取结果为新用户]" + score)
                     result(0);
                 }
                 OpenCommon.isGetMaxScoreSuccess = true;
@@ -431,7 +453,8 @@ cc.Class({
             fail(res) {
                 //console.info("[获取托管数据失败]");
                 OpenCommon.isGetMaxScoreSuccess = false;
-                result(0);
+                //获取用户分数数据失败
+                result(null);
             }
         });
     },
@@ -457,8 +480,9 @@ cc.Class({
         });
     },
     saveMaxScoreData(value) {
-        if(!OpenCommon.maxScore||value<=OpenCommon.maxScore){
-            console.info("[最高分]"+OpenCommon.maxScore +"[但存储值]"+value +"[过低]");
+        //存在最高分数据并且新的分数有效
+        if(OpenCommon.maxScore===null||OpenCommon.maxScore===undefined||(value!==0&&value<=OpenCommon.maxScore)){
+            console.info("[不存储最高分]"+OpenCommon.maxScore +"[分值]"+value +"[过低]");
             return;
         }
         let keys = ["OneEatMaxScore"];
@@ -474,10 +498,10 @@ cc.Class({
         }
         //存储分数数据
         this.saveCloudStorage(kvDataList, () => {
-            console.info("[存储最高分数据成功]");
+            console.info("[存储最高分数据成功]"+value);
             this.updateFriendInfo(keys);
         }, () => {
-            console.info("[存储最高分数据失败]");
+            console.error("[存储最高分数据失败]"+value);
         });
     },
     //排序(ListData：res.data;order:false降序，true升序)

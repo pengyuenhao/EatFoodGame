@@ -34,7 +34,7 @@ export class MatchCommand extends Command{
     //增加分数
     gainPoint() {
         this.aMgr.play("Score");
-        this.mMdl.score++
+        this.mMdl.score +=100;
         this.scoreNode.getComponent(cc.Label).string = 'Score: ' + Number(this.mMdl.score)
     }
     onMatch() {
@@ -42,6 +42,9 @@ export class MatchCommand extends Command{
     }
 
     onNotMatch() {
+        this.mMdl.lastScore = this.mMdl.score;
+        //游戏结束时存储分数
+        Common.WxGameApi.saveScore(this.mMdl.lastScore);
         this.mMdl.pauseFlag = true
         this.pauseNode.active = true
         this.pauseNode.getComponent(PauseNode).show();
