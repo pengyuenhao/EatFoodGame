@@ -35,7 +35,7 @@ export class MatchCommand extends Command{
     gainPoint() {
         this.aMgr.play("Score");
         this.mMdl.score +=100;
-        this.scoreNode.getComponent(cc.Label).string = 'Score: ' + Number(this.mMdl.score)
+        this.scoreNode.getComponent(cc.Label).string = ""+Number(this.mMdl.score)
     }
     onMatch() {
         this.gainPoint()

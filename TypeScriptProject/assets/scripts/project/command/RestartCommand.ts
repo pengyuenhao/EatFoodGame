@@ -8,6 +8,7 @@ import { MainUtil } from "../util/MainUtil";
 import { __IC_Manager, ManagerType } from "../util/Manager";
 import PrefabManager from "../util/PrefabManager";
 import CountDownView from "../view/CountDownView";
+import ArrowTipView from "../view/ArrowTipView";
 
 //引用注入装饰器
 export class RestartCommand extends Command{
@@ -23,6 +24,8 @@ export class RestartCommand extends Command{
     preMgr : PrefabManager;
     @inject(cc.Node,"MainNode")
     mainNode : cc.Node;
+    @inject(cc.Node, "Avatar")
+    avatarNode: cc.Node;
 
     execute(isPlayVideo){
         //console.info("[重新开始]");
@@ -81,7 +84,7 @@ export class RestartCommand extends Command{
     result(){
         this.mMdl.isLookVideo = false;
         this.mMdl.score = 0;
-        this.scoreNode.getComponent(cc.Label).string = 'Score: ' + Number(this.mMdl.score)
+        this.scoreNode.getComponent(cc.Label).string = ""+Number(this.mMdl.score)
     }
     /**
      * 重新开始
@@ -101,13 +104,18 @@ export class RestartCommand extends Command{
         if(isResult){
             this.result();
             waitStartTime = 4;
-            waitDurTime = 1.5;
+            waitDurTime = 2;
         }else{
             waitStartTime = 1;
             waitDurTime = 0.75;
         }
         //处于准备开始的状态
         this.mMdl.readyFlag = true;
+        if(waitDurTime>1&&this.preMgr.hasPrefab("ArrowTip")){
+            let arrowTip : cc.Node = cc.instantiate(this.preMgr.getPrefab("ArrowTip"));
+            this.avatarNode.addChild(arrowTip);
+            arrowTip.getComponent(ArrowTipView).config(100,waitDurTime*0.5,waitDurTime+2).play();
+        }
         if(this.preMgr.hasPrefab("CountDown")){
             let countDown : cc.Node = cc.instantiate(this.preMgr.getPrefab("CountDown"));
             this.mainNode.addChild(countDown);

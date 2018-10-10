@@ -8,6 +8,7 @@ import { __IC_Model, ModelType } from "../util/Model";
 import { __IC_Util, UtilType } from '../util/Util';
 import { __IC_Manager, ManagerType } from '../util/Manager';
 import AudioManager from '../util/AudioManager';
+import { Shake } from '../../lib/extensions/ActionExtension';
 
 const {ccclass, property} = cc._decorator
 
@@ -25,6 +26,8 @@ export default class Food extends IocView {
 
 	public speed = 0;
     public accel = 0;
+    //加速度的加速度
+    public strength = 0;
     
     private moveY = 0
     type = ''
@@ -33,9 +36,12 @@ export default class Food extends IocView {
     start(){super.start();}
     reuse() {}
     unuse() {}
-    public clear(){
-        this.speed = 175;
-        this.accel = 125;
+
+    public init(){
+        this.speed = 250;
+        this.accel = 75;
+        this.strength = 50;
+
         this.moveY = 0;
         this.node.x = 0;
         this.node.y = 0;
@@ -43,7 +49,8 @@ export default class Food extends IocView {
     update(dt) {
         //如果小游戏处于被隐藏的状态则不执行任何更新
         if(this.mMdl.isHide)return;
-    	if (!this.inited) return
+        if (!this.inited) return
+        this.accel += this.strength * dt
     	this.speed += this.accel * dt
     	this.moveY = this.speed * dt
         this.node.y -= this.moveY
@@ -62,6 +69,7 @@ export default class Food extends IocView {
             //this.mMdl.onMatch()
             this.sMgr.get(MainSignalEnum.Match).dispatch(GameSignalEnum.onMatch,this.node);
             this.resPoolNode(this.node);
+            otherComponent.node.runAction(Shake.create(0.25,2.5,2.5));
         } else {
             //this.mMdl.onNotMatch()
             this.sMgr.get(MainSignalEnum.Match).dispatch(GameSignalEnum.onNotMatch);

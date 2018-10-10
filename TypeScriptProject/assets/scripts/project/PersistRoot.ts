@@ -23,8 +23,9 @@ export default class PersistRoot extends cc.Component implements IRoot {
     onLoad () {
         //防止重复执行初始化
         if(Common.isInit)return;
+        cc.game.setFrameRate(60);
         Common.isInit = true;
-        console.info("[当前版本]"+Common.version);
+        console.info("[当前版本]"+Common.version + "[帧率]" + cc.game.getFrameRate());
         //配置为常驻节点
         if(!Common.persistRootNode){
             cc.game.addPersistRootNode(this.node);

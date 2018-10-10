@@ -1,5 +1,6 @@
 import {Singleton} from "./Singleton";
 import {IManager} from "./Manager";
+import Common from "../Common";
 
 export default class AudioManager extends Singleton implements IManager {
     public isInit = false;
@@ -29,20 +30,6 @@ export default class AudioManager extends Singleton implements IManager {
                 }else{
                     this.playLoopCount=0;
                 }
-                //找到一个空闲的播放源进行播放
-/*                 for(let i =0;i<this.audios.length;i++){
-                    if (!this.audios[i].isPlaying) {
-                        this.audios[i].clip = clip;
-                        this.audios[i].play();
-                        isPlay = true;
-                        break;
-                    }
-                } */
-                //没有空闲的播放源
-/*                 if (!isPlay) {
-                    this.audios[0].clip = clip;
-                    this.audios[0].play();
-                } */
             }
         }
     }
@@ -51,6 +38,16 @@ export default class AudioManager extends Singleton implements IManager {
             this.bgm.loop = true;
             this.bgm.play();
         }
+    }
+    public setVolume(volume){
+        //设置所有播放源的音量
+        if (this.audios.length != 0) {
+            this.audios.forEach((audio : cc.AudioSource)=> {
+                audio.volume = volume;
+            });
+        }
+        //设置微信API作用的BGM的音量
+        Common.WxGameApi.setBgmVolume(volume);
     }
     hasAudio(key): boolean {
         return this.audioMap.has(key);

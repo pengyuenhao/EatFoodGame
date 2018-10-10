@@ -40,7 +40,7 @@ export class UpdateCommand extends Command{
                 if (this.mMdl.score >= level) {
                     this.mMdl.currentLevel++
                     this.mMdl.timePeriod -= ratio
-                    console.log("[难度提升]"+this.mMdl.timePeriod)
+                    //console.log("[难度提升]"+this.mMdl.timePeriod)
                 }
             }
         }
@@ -54,7 +54,7 @@ export class UpdateCommand extends Command{
         }
         let foodComponent : Food = food.getComponent(Food)
         //初始化配置
-        foodComponent.clear();
+        foodComponent.init();
         //获取对象的食物组件
         foodComponent.randomProps()
         return food

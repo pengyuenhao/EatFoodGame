@@ -18,8 +18,6 @@ export default class CountDownView extends cc.Component {
     private stepDur : number;
     private completeList;
     private isPlay;
-    private alpha;
-    private isIn;
     private label;
 
     onLoad() {
@@ -54,7 +52,6 @@ export default class CountDownView extends cc.Component {
             this.step = this.value / this.time;
             this.stepDur = this.time/this.value;
         } 
-
         return this;
     }
     onComplete(complete){

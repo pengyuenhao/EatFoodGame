@@ -25,7 +25,8 @@ export default class WxGameApi {
     static errorLog(func) {
         //console.warn("[请在微信环境内调用微信接口]");
     }
-
+    static bgm;
+    static volume;
     static playBGM(bgmUrl) {
         if (!WxGameApi.isRunInWeiXin) return;
         let bgm = wx.createInnerAudioContext()
@@ -37,6 +38,12 @@ export default class WxGameApi {
         wx.onShow(() => {
             bgm.play();
         });
+        this.bgm = bgm;
+    }
+    static setBgmVolume(volume){
+        if (!WxGameApi.isRunInWeiXin) return;
+        if(this.bgm)this.bgm.volume = volume;
+        this.volume = volume;
     }
     static playVideo(x, y, w, h, url ,overtime ,isAutoPlay, onComplete) {
         if (!WxGameApi.isRunInWeiXin) return null;
@@ -53,6 +60,8 @@ export default class WxGameApi {
             controls: false,
             autoplay: isAutoPlay,
         });
+        //静音播放
+        if(this.volume===0)video.muted = true;
         video.onEnded(() => {
             isPlayFinish = true;
             onComplete();

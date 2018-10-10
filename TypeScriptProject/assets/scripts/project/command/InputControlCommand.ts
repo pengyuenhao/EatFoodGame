@@ -8,6 +8,8 @@ import { InputModel } from "../Model/InputModel";
 import { __IC_Util, UtilType } from "../util/Util";
 import { __IC_Manager, ManagerType } from "../util/Manager";
 import AudioManager from "../util/AudioManager";
+import Common from "../Common";
+import { MainUtil } from "../util/MainUtil";
 
 /**
  * 输入控制指令
@@ -19,6 +21,10 @@ export class InputControlCommand extends Command{
     iMdl : InputModel;
     @inject(cc.Node,"Animals")
     animalsNode : cc.Node;
+    @inject(cc.Node,"Avatar")
+    avatarNode : cc.Node;
+    @inject(__IC_Util,UtilType.Main)
+    mUtl : MainUtil;
     @inject(__IC_Util,UtilType.Touch)
     tUtl : TouchUtil;
     @inject(__IC_Manager,ManagerType.Audio)
@@ -26,33 +32,36 @@ export class InputControlCommand extends Command{
 
     execute(){
         let that = this;
+        let xRange = this.avatarNode.x + this.mUtl.getSceneSize().width*0.5;
+        let yRange = this.avatarNode.y + this.mUtl.getSceneSize().height*0.5;
+
         //注册一个使用全局区域的上划回调
         this.tUtl.on(TouchDirection.Up,(status:TouchStatus)=>{
-            if(status.sPosX>=0){
-                that.areaOnMove(TouchDirection.Up);
+            if(status.sPosX>=xRange){
+                that.areaOnMove(0);
             }else{
-                that.areaOnMove(TouchDirection.Down);
+                that.areaOnMove(1);
             }
         });
         this.tUtl.on(TouchDirection.Down,(status:TouchStatus)=>{
-            if(status.sPosX>=0){
-                that.areaOnMove(TouchDirection.Up);
+            if(status.sPosX>=xRange){
+                that.areaOnMove(1);
             }else{
-                that.areaOnMove(TouchDirection.Down);
+                that.areaOnMove(0);
             }
         });
         this.tUtl.on(TouchDirection.Left,(status:TouchStatus)=>{
-            if(status.sPosY>=0){
-                that.areaOnMove(TouchDirection.Left);
+            if(status.sPosY>=yRange){
+                that.areaOnMove(2);
             }else{
-                that.areaOnMove(TouchDirection.Right);
+                that.areaOnMove(3);
             }
         });
         this.tUtl.on(TouchDirection.Right,(status:TouchStatus)=>{
-            if(status.sPosY>=0){
-                that.areaOnMove(TouchDirection.Left);
+            if(status.sPosY>=yRange){
+                that.areaOnMove(3);
             }else{
-                that.areaOnMove(TouchDirection.Right);
+                that.areaOnMove(2);
             }
         });
     }
@@ -60,53 +69,95 @@ export class InputControlCommand extends Command{
     areaOnMove(direction : TouchDirection) {
         //如果暂停标志位为真并且不在准备状态则直接返回
         if (this.mMdl.pauseFlag&&!this.mMdl.readyFlag) return;
-        if (direction === TouchDirection.Left || direction === TouchDirection.Right) {
-            this.rotateAnimals(0)
-        } else if (direction === TouchDirection.Up || direction === TouchDirection.Down) {
-            this.rotateAnimals(1)
-        }
+        this.rotateAnimals(direction);
     }
     //旋转动物
     rotateAnimals(direction) {
         //如果正处于旋转中，则将缓存下一步操作
         if (this.mMdl.isRotationing) {
-            this.iMdl.waitingHandle = this.rotateAnimals(direction);
+            this.iMdl.waitingDirection = direction;
             return;
         }
         //播放跳跃音效
         this.aMgr.play("Jump");
+        if(Common.operatorMode ==0)
+            this.byScaleSpin(direction);
+        else 
+            this.byRotateSpin(direction);
+        
+    }
+    byScaleSpin(direction){
         let that = this;
-        this.mMdl.isRotationing = true
-        const [x, y] = direction ? [1, -1] : [-1, 1]
-        const rotateAction = cc.scaleBy(this.mMdl.rotateDur, x, y)
-        this.iMdl.lastAction = this.animalsNode.runAction(cc.sequence(rotateAction, cc.callFunc(() => {
+        this.mMdl.isRotationing = true;
+        let [x, y] = (direction==0||direction==1) ? [1, 0] : [0, 1];
+        let rotateAction = cc.scaleTo(this.mMdl.rotateDur * 0.5, x, y)
+        let rotateActionEnd = cc.scaleTo(this.mMdl.rotateDur * 0.5, 1, 1)
+        this.iMdl.lastAction = this.animalsNode.runAction(cc.sequence(rotateAction,cc.callFunc(()=>{
+            //交换节点的排序
             that.resetAnimalsNode(direction);
+            //重置节点的位置
             if(that.animalsNode.children&&this.animalsNode.children.length>0){
-                //遍历并旋转所有动物节点
-                that.animalsNode.children.forEach((animalNode, i) => animalNode.getComponent(Animal).rePositonAnimal(i))
+                //遍历并重新设置所有动物节点的位置
+                that.animalsNode.children.forEach((animalNode, i) => {
+                    animalNode.stopAllActions();
+                    animalNode.getComponent(Animal).rePositonAnimal(i)
+                });
             }
+            //this.animalsNode.setScale(1, 1);
+        }),rotateActionEnd, cc.callFunc(() => {
+            that.animalsNode.setScale(1, 1);
             that.mMdl.isRotationing = false;
             //执行之前等待中的操作
-            if(this.iMdl.waitingHandle){
-                this.iMdl.waitingHandle();
+            if(that.iMdl.waitingDirection!==null&&that.iMdl.waitingDirection!==undefined){
+                that.rotateAnimals(that.iMdl.waitingDirection);
+                that.iMdl.waitingDirection = null;
             }
         })));
     }
 
+    byRotateSpin(direction){
+        let that = this;
+        this.mMdl.isRotationing = true;
+        let x = (direction==0||direction==2) ? -90 : 90;
+        let rotateAction = cc.rotateBy(this.mMdl.rotateDur * 0.5, x)
+        this.iMdl.lastAction = this.animalsNode.runAction(cc.sequence(cc.spawn(rotateAction,cc.callFunc(()=>{
+            //交换节点的排序
+            //that.resetAnimalsNode(direction);
+            //重置节点的位置
+            if(that.animalsNode.children&&this.animalsNode.children.length>0){
+                let animalAction;
+                //遍历并重新设置所有动物节点的位置
+                that.animalsNode.children.forEach((animalNode, i) => {
+                    animalAction = cc.rotateBy(this.mMdl.rotateDur * 0.5, -x);
+                    animalNode.runAction(animalAction);
+                    //animalNode.getComponent(Animal).rePositonAnimal(i)
+                });
+            }
+            //this.animalsNode.setScale(1, 1);
+        })), cc.callFunc(() => {
+            that.mMdl.isRotationing = false;
+            //执行之前等待中的操作
+            if(that.iMdl.waitingDirection!==null&&that.iMdl.waitingDirection!==undefined){
+                that.rotateAnimals(that.iMdl.waitingDirection);
+                that.iMdl.waitingDirection = null;
+            }
+        })));
+    }
+    //重新设置所有节点的排序
     resetAnimalsNode(direction) {
-        const animalsNodeChildren = this.animalsNode.children;
-        if (!direction) {
-            this.switchIndex(animalsNodeChildren, 0, 1)
-            this.switchIndex(animalsNodeChildren, 3, 2)
-        } else {
+        let animalsNodeChildren = this.animalsNode.children;
+        if (direction==0||direction==1) {
             this.switchIndex(animalsNodeChildren, 0, 3)
             this.switchIndex(animalsNodeChildren, 1, 2)
+        } else {
+            this.switchIndex(animalsNodeChildren, 0, 1)
+            this.switchIndex(animalsNodeChildren, 3, 2)
         }
-        this.animalsNode.setScale(1, 1)
+        //this.animalsNode.setScale(1, 1)
     }
-
+    //交换节点层级位置
     switchIndex(list, one, two) {
-        const temp = list[two]
+        let temp = list[two]
         list[two] = list[one]
         list[one] = temp
     }

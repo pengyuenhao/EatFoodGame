@@ -1,3 +1,4 @@
+import Common from "../Common";
 
 const {ccclass, property} = cc._decorator
 
@@ -17,5 +18,9 @@ export default class Begin extends cc.Component {
 
     lookRank(){
         cc.director.loadScene("Rank");
+    }
+
+    option(event:cc.Event.EventTouch){
+        cc.director.loadScene("Option");
     }
 }

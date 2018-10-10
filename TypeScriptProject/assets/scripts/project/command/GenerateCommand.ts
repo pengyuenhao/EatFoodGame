@@ -1,30 +1,12 @@
-import {
-    Command
-} from "../../lib/framework/Command/Command";
-import {
-    inject
-} from "../../lib/framework/Injector/InjectDecorator";
-import {
-    MainModel
-} from "../Model/MainModel";
-import {
-    MainUtil
-} from "../util/MainUtil";
+import {Command} from "../../lib/framework/Command/Command";
+import {inject} from "../../lib/framework/Injector/InjectDecorator";
+import {MainModel} from "../Model/MainModel";
+import {MainUtil} from "../util/MainUtil";
 import Animal from "../view/Animal";
-import {
-    __IC_Model,
-    ModelType
-} from "../util/Model";
+import {__IC_Model,ModelType} from "../util/Model";
 import PrefabPool from "../helper/PrefabPool";
-import {
-    TouchUtil,
-    TouchDirection,
-    TouchStatus
-} from "../util/TouchUtil";
-import {
-    __IC_Util,
-    UtilType
-} from "../util/Util";
+import {TouchUtil,} from "../util/TouchUtil";
+import {__IC_Util,UtilType} from "../util/Util";
 
 /**
  * 生成视图节点命令

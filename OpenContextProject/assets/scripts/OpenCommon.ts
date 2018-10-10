@@ -1,4 +1,7 @@
+import PrefabPool from "./PrefabPool";
+
 export class OpenCommon{
+    static prefabPool : PrefabPool = null;
     static groupShareTickets;
     static isGetMaxScoreSuccess;
     //最高分

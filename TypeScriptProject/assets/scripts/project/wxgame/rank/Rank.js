@@ -151,7 +151,7 @@ cc.Class({
 
     shareApp() {
         if (!WxGameApi.isRunInWeiXin) return;
-        let url = "https://636f-common-510ecc-1257233686.tcb.qcloud.la/share_rabbit.png?sign=9875d25b3df98df73fbaf7ae9dcdb860&t=1538207291";
+        let url = "https://636f-common-510ecc-1257233686.tcb.qcloud.la/share_rabbit.png";
         let that = this;
         wx.shareAppMessage({
             title: "一起来玩游戏吧！",

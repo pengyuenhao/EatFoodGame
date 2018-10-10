@@ -2,10 +2,13 @@ import PersistRoot from "./PersistRoot";
 
 //全局变量
  export default class  Common{
-    static viedo
-    static viedoHandle;
+    //操作模式
+    static operatorMode = 0;
+    static enableAudio = 1;
+    static viedo = null
+    static viedoHandle = null;
     static WxGameApi = null;
-    static version = "v1.6.0";
+    static version = "v1.6.6";
     static isInit : boolean = false;
     static persistRootNode : PersistRoot= null;
     static root = null;

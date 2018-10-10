@@ -1,6 +1,5 @@
-import {
-    OpenCommon
-} from "./OpenCommon";
+import {OpenCommon} from "./OpenCommon";
+import PrefabPool from "./PrefabPool";
 
 cc.Class({
     extends: cc.Component,
@@ -10,6 +9,7 @@ cc.Class({
         prefab: cc.Prefab
     },
     onLoad(){
+        OpenCommon.prefabPool = new PrefabPool(cc.Node,this.prefab);
         //获取用户信息
         this.getUserInfo((result) => {
             console.info("[获取用户信息]"+result);
@@ -83,7 +83,8 @@ cc.Class({
                 score = "null";
                 userRank.string = "null";
             }else{
-
+                userRank.fontSize = 100;
+                userRank.node.color = new cc.Color(255,255,255);
                 that.rank += 1;
                 userRank.string = that.rank;
                 switch(that.rank){
@@ -126,7 +127,8 @@ cc.Class({
         }
     },
     createPrefab() {
-        let node = cc.instantiate(this.prefab);
+        let node = OpenCommon.prefabPool.get();
+        //let node = cc.instantiate(this.prefab);
         node.parent = this.content;
         return node;
     },
@@ -221,6 +223,10 @@ cc.Class({
     //移除容器内所有子节点
     clearContext() {
         this.rank = 0;
+        //回收所有子节点
+        this.content.children.forEach(child => {
+            OpenCommon.prefabPool.res(child);
+        });
         this.content.removeAllChildren();
         //console.info("[清理容器]");
     },
@@ -293,7 +299,7 @@ cc.Class({
                 that.resolveInfo("Friend", "OneEatMaxScore", res.data);
             },
             fail: function (res) {
-                console.error(res);
+                console.error("[更新朋友信息失败]"+res);
             }
         });
     },
@@ -315,6 +321,8 @@ cc.Class({
                     kList.push(keys[i]);
                 }
             }
+            //更新朋友排行榜信息
+            that.updateFriendInfo(keys);
         } else {
             kList = keys;
         }
@@ -406,6 +414,11 @@ cc.Class({
                     kList.push(keys[i]);
                 }
             }
+            //更新排行榜分数
+            if(OpenCommon.lastTicket){
+                //如果存在信息则进行更新
+                that.updateGroupInfo(OpenCommon.lastTicket,keys);
+            }
         } else {
             kList = keys;
         }
@@ -481,25 +494,27 @@ cc.Class({
     },
     saveMaxScoreData(value) {
         //存在最高分数据并且新的分数有效
-        if(OpenCommon.maxScore===null||OpenCommon.maxScore===undefined||(value!==0&&value<=OpenCommon.maxScore)){
+        if(OpenCommon.maxScore===null||OpenCommon.maxScore===undefined||value<=OpenCommon.maxScore){
             console.info("[不存储最高分]"+OpenCommon.maxScore +"[分值]"+value +"[过低]");
             return;
         }
+        let that = this;
         let keys = ["OneEatMaxScore"];
         let kvDataList = new Array();
         kvDataList.push({
             key: keys[0],
             value: "" + value
         });
-        //上报分数后立刻更新排行榜分数
-        if(OpenCommon.lastTicket){
-            //如果存在信息则进行更新
-            this.updateGroupInfo(OpenCommon.lastTicket,keys);
-        }
         //存储分数数据
         this.saveCloudStorage(kvDataList, () => {
             console.info("[存储最高分数据成功]"+value);
-            this.updateFriendInfo(keys);
+            //更新朋友排行榜信息
+            that.updateFriendInfo(keys);
+            //上报分数后立刻更新排行榜分数
+            if(OpenCommon.lastTicket){
+                //如果存在信息则进行更新
+                that.updateGroupInfo(OpenCommon.lastTicket,keys);
+            }
         }, () => {
             console.error("[存储最高分数据失败]"+value);
         });

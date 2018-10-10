@@ -18,7 +18,7 @@ export class Singleton {
     protected onConstructor() {
 
     }
-    public static get Instance() {
+    public static get Instance(){
         return Singleton.getInstanceOrCreate(this);
     }
 
